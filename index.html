@@ -1,0 +1,2066 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحة تحكم نظام البلاغات الإلكترونية | OVR Dashboard</title>
+    <meta name="description" content="لوحة تحكم تفاعلية لمتابعة وإدارة مؤشرات نظام البلاغات الإلكترونية للحوادث والمخالفات - OVR Dashboard" />
+    <style>
+/* @section: design-system */
+:root {
+  color-scheme: light;
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface-muted: #e8eef5;
+  --text: #1a2332;
+  --muted: #5d6b82;
+  --border: #d1dae6;
+  --primary: #006272;
+  --primary-light: #00829a;
+  --primary-dark: #004d5a;
+  --accent: #C9A84C;
+  --accent-light: #e0c76e;
+  --accent-dark: #a88a30;
+  --success: #0f9d58;
+  --success-bg: #e6f7ee;
+  --warning: #f5a623;
+  --warning-bg: #fef7e6;
+  --danger: #d32f2f;
+  --danger-bg: #fde8e8;
+  --info: #1976d2;
+  --info-bg: #e3f2fd;
+  --sentinel: #b71c1c;
+  --sentinel-bg: #ffcdd2;
+  --purple: #7b1fa2;
+  --purple-bg: #f3e5f5;
+  --shadow-sm: 0 1px 3px rgba(0,39,50,0.08);
+  --shadow: 0 4px 16px rgba(0,39,50,0.1);
+  --shadow-lg: 0 8px 32px rgba(0,39,50,0.12);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-lg: 16px;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --sidebar-w: 260px;
+  --header-h: 64px;
+  font-family: "Segoe UI", "Tahoma", "Arial", system-ui, -apple-system, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  direction: rtl;
+}
+
+img, svg, video, canvas { display: block; max-width: 100%; }
+button, input, textarea, select { font: inherit; }
+a { color: var(--primary); text-decoration: none; }
+h1, h2, h3, p { margin-top: 0; }
+
+/* @section: scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface-muted); }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+/* @section: loading-overlay */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(240,244,248,0.95);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.4s;
+}
+.loading-overlay.hidden { opacity: 0; pointer-events: none; }
+.loading-spinner { text-align: center; }
+.spinner {
+  width: 48px; height: 48px;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto var(--space-4);
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* @section: connection-banner */
+.connection-banner {
+  padding: var(--space-2) var(--space-5);
+  background: var(--warning-bg);
+  border-bottom: 2px solid var(--warning);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #7a5a00;
+}
+.connection-banner.error { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+
+/* @section: sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: #fff;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+.logo-icon { font-size: 2.5rem; margin-bottom: var(--space-2); }
+
+.sidebar-logo {
+  display: block;
+  width: 55% !important;
+  max-width: 120px !important;
+  max-height: 140px !important;
+  height: auto !important;
+  margin: 0 auto var(--space-2) !important;
+  border-radius: 6px;
+  background: #fff;
+  padding: 5px 4px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.15);
+  object-fit: contain;
+  overflow: hidden;
+}
+
+.sidebar-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-subtitle {
+  font-size: 0.72rem;
+  opacity: 0.75;
+  margin-bottom: 0;
+}
+
+.sidebar-nav {
+  padding: var(--space-3) 0;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  color: rgba(255,255,255,0.8);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border-right: 3px solid transparent;
+  cursor: pointer;
+}
+
+.nav-item:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.nav-item.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-right-color: var(--accent);
+}
+
+.nav-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+/* @section: sidebar-footer */
+.sidebar-footer {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid rgba(255,255,255,0.15);
+  text-align: center;
+}
+
+.data-source-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: var(--space-1) var(--space-2);
+  border-radius: 12px;
+  margin-bottom: var(--space-1);
+}
+
+.data-source-badge.online { background: rgba(15,157,88,0.2); }
+.data-source-badge.offline { background: rgba(211,47,47,0.2); }
+.data-source-badge.fallback { background: rgba(245,166,35,0.2); }
+
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.data-source-badge.online .status-dot { background: var(--success); }
+.data-source-badge.offline .status-dot { background: var(--danger); }
+.data-source-badge.fallback .status-dot { background: var(--warning); }
+
+.last-update { font-size: 0.65rem; opacity: 0.7; }
+
+/* @section: main-wrapper */
+.main-wrapper {
+  margin-right: var(--sidebar-w);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* @section: top-header */
+.top-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  min-height: var(--header-h);
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.header-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.hospital-badge {
+  background: var(--primary);
+  color: #fff;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.date-badge {
+  background: var(--accent);
+  color: #fff;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* @section: filters */
+.filters-bar {
+  margin: var(--space-4) var(--space-5);
+  padding: var(--space-4) var(--space-5);
+}
+
+.filters-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: var(--space-4);
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.filter-group label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: var(--space-1);
+}
+
+.filter-group select {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.filters-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* @section: buttons */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding: 0.5rem 1.2rem;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  gap: var(--space-2);
+}
+
+.button:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+
+.button.secondary {
+  background: transparent;
+  color: var(--primary);
+}
+
+.button.secondary:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* @section: page-content */
+.page-content {
+  display: none;
+  padding: 0 var(--space-5) var(--space-5);
+  animation: fadeIn 0.3s ease;
+}
+
+.page-content.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--accent);
+  display: inline-block;
+}
+
+/* @section: kpi-cards */
+.kpi-section { margin-bottom: var(--space-5); }
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-3);
+}
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--primary);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.kpi-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+
+.kpi-card.danger::before { background: var(--danger); }
+.kpi-card.warning::before { background: var(--warning); }
+.kpi-card.success::before { background: var(--success); }
+.kpi-card.info::before { background: var(--info); }
+.kpi-card.sentinel::before { background: var(--sentinel); }
+.kpi-card.purple::before { background: var(--purple); }
+.kpi-card.accent::before { background: var(--accent); }
+
+.kpi-icon {
+  font-size: 1.6rem;
+  margin-bottom: var(--space-2);
+}
+
+.kpi-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.1;
+  margin-bottom: var(--space-1);
+}
+
+.kpi-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* @section: charts */
+.charts-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.charts-row.two-col {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.charts-row:has(.chart-panel-wide) {
+  grid-template-columns: 1fr;
+}
+
+.chart-panel, .chart-panel-wide {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.chart-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--surface-muted);
+}
+
+.gauge-container {
+  position: relative;
+  max-width: 220px;
+  margin: 0 auto;
+}
+
+.gauge-label {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+/* @section: tables */
+.table-panel {
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+}
+
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.data-table th {
+  background: var(--primary);
+  color: #fff;
+  padding: var(--space-3);
+  text-align: right;
+  font-weight: 600;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+}
+
+.data-table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.data-table tbody tr:hover { background: var(--surface-muted); }
+.data-table tbody tr:nth-child(even) { background: rgba(0,98,114,0.03); }
+
+/* @section: sentinel-panel */
+.sentinel-panel { border: 2px solid var(--sentinel); }
+.sentinel-title { color: var(--sentinel) !important; }
+.sentinel-panel .data-table th { background: var(--sentinel); }
+.sentinel-row { background: var(--sentinel-bg) !important; }
+.sentinel-row:hover { background: #ef9a9a !important; }
+
+/* @section: badges */
+.perf-badge, .compliance-badge, .classification-badge, .priority-badge, .severity-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.perf-green { background: var(--success-bg); color: var(--success); }
+.perf-yellow { background: var(--warning-bg); color: #b8860b; }
+.perf-red { background: var(--danger-bg); color: var(--danger); }
+
+.compliant { background: var(--success-bg); color: var(--success); }
+.non-compliant { background: var(--danger-bg); color: var(--danger); }
+
+/* Classification badges / شارات التصنيف */
+.cls-sentinel { background: var(--sentinel-bg); color: var(--sentinel); font-weight: 800; }
+.cls-reportable { background: #fff3e0; color: #e65100; }
+.cls-adverse { background: var(--danger-bg); color: var(--danger); }
+.cls-nearmiss { background: var(--warning-bg); color: #b8860b; }
+.cls-noharm { background: var(--success-bg); color: var(--success); }
+
+/* Priority badges / شارات الأولوية */
+.pri-critical { background: var(--sentinel-bg); color: var(--sentinel); font-weight: 800; }
+.pri-high { background: var(--danger-bg); color: var(--danger); }
+.pri-medium { background: var(--warning-bg); color: #b8860b; }
+.pri-low { background: var(--success-bg); color: var(--success); }
+
+/* Severity badges / شارات الخطورة */
+.sev-red { background: var(--sentinel-bg); color: var(--sentinel); }
+.sev-amber { background: #fff3e0; color: #e65100; }
+.sev-yellow { background: var(--warning-bg); color: #b8860b; }
+.sev-green { background: var(--success-bg); color: var(--success); }
+
+/* @section: heatmap */
+.heatmap-table td {
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.78rem;
+  min-width: 60px;
+}
+
+.heat-green { background: var(--success-bg); color: var(--success); }
+.heat-yellow { background: var(--warning-bg); color: #b8860b; }
+.heat-red { background: var(--danger-bg); color: var(--danger); }
+.heat-na { background: var(--surface-muted); color: var(--muted); }
+
+/* @section: alerts */
+.alerts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+
+.alert-card {
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.alert-card.alert-danger {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  border-right: 4px solid var(--danger);
+}
+
+.alert-card.alert-sentinel {
+  background: var(--sentinel-bg);
+  border: 1px solid var(--sentinel);
+  border-right: 4px solid var(--sentinel);
+}
+
+.alert-card.alert-warning {
+  background: var(--warning-bg);
+  border: 1px solid var(--warning);
+  border-right: 4px solid var(--warning);
+}
+
+.alert-card.alert-info {
+  background: var(--info-bg);
+  border: 1px solid var(--info);
+  border-right: 4px solid var(--info);
+}
+
+.alert-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.alert-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.alert-list li {
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  font-size: 0.82rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.alert-list li:last-child { border-bottom: none; }
+
+.alert-count {
+  background: rgba(0,0,0,0.1);
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* @section: details-page */
+.details-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+
+.details-table td { font-size: 0.76rem; }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+}
+
+.page-btn {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.page-btn:hover, .page-btn.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* @section: footer */
+.dashboard-footer {
+  margin-top: auto;
+  padding: var(--space-4) var(--space-5);
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.dashboard-footer p { margin-bottom: var(--space-1); }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+/* @section: responsive */
+@media (max-width: 1200px) {
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  .charts-row { grid-template-columns: repeat(2, 1fr); }
+  .charts-row.two-col { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main-wrapper { margin-right: 0; }
+  .menu-toggle { display: block; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-row, .charts-row.two-col { grid-template-columns: 1fr; }
+  .alerts-grid { grid-template-columns: 1fr; }
+  .header-meta { display: none; }
+  .filters-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .filters-grid { grid-template-columns: 1fr; }
+  .details-toolbar { flex-direction: column; }
+  .search-input { min-width: 100%; }
+}
+
+/* @section: print */
+@media print {
+  .sidebar, .filters-bar, .menu-toggle, .details-toolbar, .connection-banner, .loading-overlay { display: none !important; }
+  .main-wrapper { margin-right: 0; }
+  .page-content { display: block !important; }
+  .kpi-card, .chart-panel, .panel { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+}
+
+</style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  </head>
+  <body>
+
+    <!-- @section: loading-overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>جاري تحميل البيانات من Google Sheets...</p>
+        <p class="muted" style="font-size:0.75rem">Loading data from Google Sheets...</p>
+      </div>
+    </div>
+
+    <!-- @section: sidebar-nav -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <img src="https://skyagent-artifacts.skywork.ai/router/agent/2026-06-23/prod_agent_baae6f8a-077b-44aa-8fec-0f03c07bf48b/typo_dashboard_cropped_e53d3aa2a4a3452485501d9baa59c1e8.png" alt="إدارة الجودة وسلامة المرضى / Quality & Patient Safety" class="sidebar-logo" style="display:block;width:120px;max-width:55%;max-height:140px;height:auto;margin:0 auto 8px;object-fit:contain;border-radius:6px;background:#fff;padding:5px 4px;box-shadow:0 1px 6px rgba(0,0,0,0.15);" />
+        <h2 class="sidebar-title">OVR Dashboard</h2>
+        <p class="sidebar-subtitle">نظام البلاغات الإلكترونية</p>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-page="overview">
+          <span class="nav-icon">📊</span>
+          <span>نظرة عامة / Overview</span>
+        </a>
+        <a href="#" class="nav-item" data-page="classification">
+          <span class="nav-icon">🏷️</span>
+          <span>التصنيف / Classification</span>
+        </a>
+        <a href="#" class="nav-item" data-page="departments">
+          <span class="nav-icon">🏢</span>
+          <span>الأقسام / Departments</span>
+        </a>
+        <a href="#" class="nav-item" data-page="administrations">
+          <span class="nav-icon">🏛️</span>
+          <span>الإدارات / Administrations</span>
+        </a>
+        <a href="#" class="nav-item" data-page="trends">
+          <span class="nav-icon">📈</span>
+          <span>التحليلات الزمنية / Trends</span>
+        </a>
+        <a href="#" class="nav-item" data-page="alerts">
+          <span class="nav-icon">🔔</span>
+          <span>التنبيهات / Alerts</span>
+        </a>
+        <a href="#" class="nav-item" data-page="details">
+          <span class="nav-icon">📋</span>
+          <span>البلاغات التفصيلية / Details</span>
+        </a>
+      </nav>
+      <!-- Data source status -->
+      <div class="sidebar-footer">
+        <div id="dataSourceStatus" class="data-source-badge offline">
+          <span class="status-dot"></span>
+          <span id="dataSourceLabel">غير متصل / Offline</span>
+        </div>
+        <div id="lastUpdateTime" class="last-update muted"></div>
+      </div>
+    </aside>
+
+    <!-- @section: main-content -->
+    <div class="main-wrapper">
+
+      <!-- @section: top-header -->
+      <header class="top-header">
+        <button id="menuToggle" class="menu-toggle" aria-label="Toggle menu">☰</button>
+        <h1 class="header-title">لوحة تحكم نظام البلاغات الإلكترونية / OVR Dashboard</h1>
+        <div class="header-meta">
+          <span class="hospital-badge">مستشفى الولادة والأطفال — حفر الباطن</span>
+          <span class="date-badge" id="currentDate"></span>
+        </div>
+      </header>
+
+      <!-- @section: connection-banner -->
+      <div id="connectionBanner" class="connection-banner" style="display:none">
+        <span id="connectionMsg"></span>
+        <button id="retryConnection" class="button" style="padding:2px 12px;min-height:auto;font-size:0.75rem">إعادة المحاولة / Retry</button>
+      </div>
+
+      <!-- @section: filters-bar -->
+      <section class="filters-bar panel" id="filtersBar">
+        <h3 class="filters-title">🔍 الفلاتر التفاعلية / Interactive Filters</h3>
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label for="filterYear">السنة / Year</label>
+            <select id="filterYear"><option value="">الكل / All</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="filterMonth">الشهر / Month</label>
+            <select id="filterMonth"><option value="">الكل / All</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="filterDept">القسم المبلغ / Reporting Dept</label>
+            <select id="filterDept"><option value="">الكل / All</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="filterAdmin">الإدارة المسؤولة / Directorate</label>
+            <select id="filterAdmin"><option value="">الكل / All</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="filterType">نوع البلاغ / Incident Type</label>
+            <select id="filterType"><option value="">الكل / All</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="filterSeverity">مستوى الخطورة / Severity</label>
+            <select id="filterSeverity"><option value="">الكل / All</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="filterStatus">حالة البلاغ / Status</label>
+            <select id="filterStatus"><option value="">الكل / All</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="filterClassification">تصنيف الحدث / Event Classification</label>
+            <select id="filterClassification"><option value="">الكل / All</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="filterPriority">الأولوية / Priority</label>
+            <select id="filterPriority"><option value="">الكل / All</option></select>
+          </div>
+          <div class="filter-group">
+            <label for="filterCompliance">حالة الالتزام / Compliance</label>
+            <select id="filterCompliance"><option value="">الكل / All</option></select>
+          </div>
+        </div>
+        <div class="filters-actions">
+          <button class="button" id="applyFilters">تطبيق / Apply</button>
+          <button class="button secondary" id="resetFilters">إعادة تعيين / Reset</button>
+          <button class="button" id="refreshData" style="background:var(--accent);border-color:var(--accent)">🔄 تحديث البيانات / Refresh</button>
+        </div>
+      </section>
+
+      <!-- @section: page-overview -->
+      <div id="page-overview" class="page-content active">
+        <section class="kpi-section">
+          <h2 class="section-title">المؤشرات الرئيسية / Key Performance Indicators</h2>
+          <div class="kpi-grid" id="kpiGrid"></div>
+        </section>
+        <section class="charts-row">
+          <div class="chart-panel panel">
+            <h3 class="chart-title">نسبة الالتزام العامة / Overall Compliance Rate</h3>
+            <div class="gauge-container">
+              <canvas id="gaugeChart"></canvas>
+              <div class="gauge-label" id="gaugeLabel">0%</div>
+            </div>
+          </div>
+          <div class="chart-panel panel">
+            <h3 class="chart-title">توزيع أنواع البلاغات / Incident Types Distribution</h3>
+            <canvas id="pieChart"></canvas>
+          </div>
+          <div class="chart-panel panel">
+            <h3 class="chart-title">توزيع مستويات الخطورة / Severity Distribution</h3>
+            <canvas id="severityPieChart"></canvas>
+          </div>
+        </section>
+      </div>
+
+      <!-- @section: page-classification -->
+      <div id="page-classification" class="page-content">
+        <h2 class="section-title">🏷️ تصنيف الأحداث / Event Classification</h2>
+        <section class="kpi-section">
+          <div class="kpi-grid" id="classificationKpiGrid"></div>
+        </section>
+        <div class="charts-row two-col">
+          <div class="chart-panel panel">
+            <h3 class="chart-title">توزيع البلاغات حسب التصنيف المعتمد / Classification Distribution</h3>
+            <canvas id="classificationPieChart"></canvas>
+          </div>
+          <div class="chart-panel panel">
+            <h3 class="chart-title">توزيع البلاغات حسب الأولوية / Priority Distribution</h3>
+            <canvas id="priorityPieChart"></canvas>
+          </div>
+        </div>
+        <div class="charts-row">
+          <div class="chart-panel-wide panel">
+            <h3 class="chart-title">التصنيف حسب القسم / Classification by Department</h3>
+            <canvas id="classificationByDeptChart"></canvas>
+          </div>
+        </div>
+        <!-- Sentinel Events Table -->
+        <div class="table-panel panel sentinel-panel">
+          <h3 class="chart-title sentinel-title">🚨 سجل الأحداث الخافرة / Sentinel Events Log</h3>
+          <div class="table-responsive">
+            <table id="sentinelTable" class="data-table">
+              <thead>
+                <tr>
+                  <th>رقم البلاغ / OVR #</th>
+                  <th>العنوان / Title</th>
+                  <th>القسم / Dept</th>
+                  <th>تاريخ الحدث / Event Date</th>
+                  <th>الخطورة / Severity</th>
+                  <th>الأولوية / Priority</th>
+                  <th>الحالة / Status</th>
+                </tr>
+              </thead>
+              <tbody id="sentinelBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- @section: page-departments -->
+      <div id="page-departments" class="page-content">
+        <h2 class="section-title">مؤشرات الأداء حسب الأقسام / Department Performance</h2>
+        <div class="charts-row">
+          <div class="chart-panel-wide panel">
+            <h3 class="chart-title">عدد البلاغات لكل قسم / Reports per Department</h3>
+            <canvas id="deptBarChart"></canvas>
+          </div>
+        </div>
+        <div class="charts-row two-col">
+          <div class="chart-panel panel">
+            <h3 class="chart-title">نسبة الالتزام بالإغلاق لكل قسم / Closure Compliance by Dept</h3>
+            <canvas id="deptComplianceChart"></canvas>
+          </div>
+          <div class="chart-panel panel">
+            <h3 class="chart-title">البلاغات المتأخرة لكل قسم / Overdue Reports by Dept</h3>
+            <canvas id="deptOverdueChart"></canvas>
+          </div>
+        </div>
+        <div class="table-panel panel">
+          <h3 class="chart-title">ترتيب الأقسام حسب الأداء / Department Ranking</h3>
+          <div class="table-responsive">
+            <table id="deptTable" class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>القسم / Department</th>
+                  <th>إجمالي البلاغات / Total</th>
+                  <th>مغلقة / Closed</th>
+                  <th>نسبة الإغلاق / Closure %</th>
+                  <th>نسبة الالتزام / Compliance %</th>
+                  <th>متأخرة / Overdue</th>
+                  <th>مؤشر الأداء / Performance</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- @section: page-administrations -->
+      <div id="page-administrations" class="page-content">
+        <h2 class="section-title">مؤشرات الأداء حسب الإدارات / Administration Performance</h2>
+        <div class="charts-row">
+          <div class="chart-panel-wide panel">
+            <h3 class="chart-title">مقارنة الإدارات — الالتزام بالسياسة / Admin Policy Compliance</h3>
+            <canvas id="adminComplianceChart"></canvas>
+          </div>
+        </div>
+        <div class="charts-row two-col">
+          <div class="chart-panel panel">
+            <h3 class="chart-title">البلاغات المتأخرة لكل إدارة / Overdue by Admin</h3>
+            <canvas id="adminOverdueChart"></canvas>
+          </div>
+          <div class="chart-panel panel">
+            <h3 class="chart-title">متوسط زمن الإغلاق لكل إدارة / Avg Closure Time by Admin</h3>
+            <canvas id="adminAvgTimeChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- @section: page-trends -->
+      <div id="page-trends" class="page-content">
+        <h2 class="section-title">التحليلات الزمنية / Time-Based Analysis</h2>
+        <div class="charts-row">
+          <div class="chart-panel-wide panel">
+            <h3 class="chart-title">اتجاه البلاغات شهرياً / Monthly Report Trend</h3>
+            <canvas id="monthlyTrendChart"></canvas>
+          </div>
+        </div>
+        <div class="charts-row two-col">
+          <div class="chart-panel panel">
+            <h3 class="chart-title">اتجاه نسبة الالتزام شهرياً / Monthly Compliance Trend</h3>
+            <canvas id="complianceTrendChart"></canvas>
+          </div>
+          <div class="chart-panel panel">
+            <h3 class="chart-title">اتجاه البلاغات المتأخرة شهرياً / Monthly Overdue Trend</h3>
+            <canvas id="overdueTrendChart"></canvas>
+          </div>
+        </div>
+        <div class="charts-row">
+          <div class="chart-panel-wide panel">
+            <h3 class="chart-title">اتجاه زمن الإغلاق خلال السنة / Closure Time Trend</h3>
+            <canvas id="closureTimeTrendChart"></canvas>
+          </div>
+        </div>
+        <div class="table-panel panel">
+          <h3 class="chart-title">خريطة حرارية — الالتزام حسب القسم والشهر / Compliance Heat Map</h3>
+          <div class="table-responsive">
+            <table id="heatMapTable" class="data-table heatmap-table">
+              <thead><tr id="heatMapHeader"></tr></thead>
+              <tbody id="heatMapBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- @section: page-alerts -->
+      <div id="page-alerts" class="page-content">
+        <h2 class="section-title">🔔 نظام التنبيهات / Alert System</h2>
+        <div class="alerts-grid" id="alertsContainer"></div>
+      </div>
+
+      <!-- @section: page-details -->
+      <div id="page-details" class="page-content">
+        <h2 class="section-title">📋 البلاغات التفصيلية / Detailed Reports</h2>
+        <div class="details-toolbar">
+          <input type="text" id="searchInput" placeholder="بحث... / Search..." class="search-input" />
+          <button class="button" id="exportExcel">📥 تصدير Excel / Export CSV</button>
+          <button class="button secondary" id="exportPDF">📄 طباعة PDF / Print PDF</button>
+        </div>
+        <div class="table-panel panel">
+          <div class="table-responsive">
+            <table id="detailsTable" class="data-table details-table">
+              <thead>
+                <tr>
+                  <th>رقم البلاغ / OVR #</th>
+                  <th>العنوان / Title</th>
+                  <th>القسم / Dept</th>
+                  <th>الإدارة / Directorate</th>
+                  <th>تاريخ الحدث / Event Date</th>
+                  <th>تاريخ الإغلاق / Closed</th>
+                  <th>الأيام / Days</th>
+                  <th>المستهدف / Target</th>
+                  <th>الخطورة / Severity</th>
+                  <th>التصنيف / Classification</th>
+                  <th>الأولوية / Priority</th>
+                  <th>الحالة / Status</th>
+                </tr>
+              </thead>
+              <tbody id="detailsBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </div>
+
+      <!-- @section: footer -->
+      <footer class="dashboard-footer">
+        <p>© 2026 مستشفى الولادة والأطفال — حفر الباطن | إدارة الجودة وسلامة المرضى</p>
+        <p class="muted" id="footerDataSource">مصدر البيانات: Google Sheets (تحديث تلقائي) / Data Source: Google Sheets (Auto-refresh)</p>
+      </footer>
+    </div>
+
+    <script>
+// @section: config
+// ══════════════════════════════════════════════════════════════
+// Google Sheets Configuration / إعدادات Google Sheets
+// ══════════════════════════════════════════════════════════════
+// HOW TO CONNECT / طريقة الربط:
+// 1. Upload OVR_Database.xlsx to Google Drive / ارفع ملف Excel إلى Google Drive
+// 2. Open with Google Sheets / افتح بـ Google Sheets
+// 3. File → Share → Publish to web → Sheet "OVR_Data" → CSV → Publish
+//    ملف → مشاركة → النشر على الويب → ورقة "OVR_Data" → CSV → نشر
+// 4. Copy the published CSV URL and paste it below / انسخ الرابط وألصقه أدناه
+// ══════════════════════════════════════════════════════════════
+const CONFIG = {
+  // Replace this URL with your published Google Sheets CSV URL
+  // استبدل هذا الرابط برابط CSV المنشور من Google Sheets
+  GOOGLE_SHEETS_CSV_URL: "https://docs.google.com/spreadsheets/d/1O8110hzBks98rCo8aOoPn4I7A3aAP1yPvGI4Yi0zrx8/gviz/tq?tqx=out:csv",
+
+  REFRESH_INTERVAL_MS: 24 * 60 * 60 * 1000, // Auto-refresh every 24 hours / تحديث تلقائي كل 24 ساعة
+  CACHE_KEY: "ovr_dashboard_cache",           // localStorage cache key / مفتاح التخزين المؤقت
+  CACHE_TTL_MS: 4 * 60 * 60 * 1000,          // Cache valid for 4 hours / صلاحية التخزين 4 ساعات
+  WARNING_DAYS: 3,                            // Days before due for warning / أيام التنبيه قبل الاستحقاق
+  COMPLIANCE_TARGET: 90,                      // Target compliance % / مستهدف الالتزام
+};
+
+// @section: policy-rules
+// ══════════════════════════════════════════════════════════════
+// Policy-based closure days per severity (from QM&PS-APP-003)
+// المدة المستهدفة للإغلاق حسب مستوى الخطورة (وفق السياسة)
+// Green = 5 days, Yellow/Amber = 10 days, Red = 14 days
+// ══════════════════════════════════════════════════════════════
+const POLICY_CLOSURE_DAYS = {
+  "Green": 5,
+  "Yellow": 10,
+  "Amber": 10,
+  "Red": 14
+};
+
+// ══════════════════════════════════════════════════════════════
+// Sentinel Events List (Appendix 7.2 — QM&PS-APP-003)
+// قائمة الأحداث الخافرة (الملحق 7.2)
+// ══════════════════════════════════════════════════════════════
+const SENTINEL_KEYWORDS = [
+  "abduction", "اختطاف",
+  "wrong family", "عائلة خاطئة", "تسليم مولود",
+  "unauthorized person", "شخص غير مصرح",
+  "suicide", "انتحار", "إيذاء النفس", "self-harm",
+  "wrong patient", "wrong site", "wrong side", "wrong implant", "موقع خاطئ", "مريض خاطئ",
+  "incompatible", "ABO", "نقل دم غير متوافق", "خطأ في نقل الدم",
+  "foreign object", "جسم غريب", "retention",
+  "unexpected death", "وفاة غير متوقعة", "وفاة مولود",
+  "rape", "اغتصاب",
+  "assault", "homicide", "اعتداء", "قتل",
+  "violence", "عنف",
+  "fire", "flame", "smoke", "حريق", "دخان",
+  "absconded", "مغادرة غير مصرح", "هروب",
+  "air embolism", "انسداد هوائي",
+  "device breakdown", "عطل جهاز", "فشل جهاز طبي",
+  "building collapse", "انهيار مبنى", "خلل هيكلي",
+  "contaminated", "ملوث", "تلوث",
+  "hyperbilirubinemia", "يرقان",
+  "radiotherapy", "إشعاعي",
+  "patient fall", "سقوط مريض",
+  "wrong medical gas", "غاز طبي خاطئ",
+  "system failure", "evacuation", "إخلاء", "انقطاع خدمة",
+  "loss of limb", "فقدان طرف", "فقدان وظيفة",
+  "maternal death", "وفاة أمومية", "وفاة أم",
+  "metallic object", "MR damage", "جسم معدني",
+  "specimen", "عينة", "خزعة", "biopsy"
+];
+
+// ══════════════════════════════════════════════════════════════
+// Mandatory Reportable Events List (Appendix 7.3 — QM&PS-APP-003)
+// قائمة الأحداث الواجب الإبلاغ عنها (الملحق 7.3)
+// ══════════════════════════════════════════════════════════════
+const REPORTABLE_KEYWORDS = [
+  "perienal tear", "perineal tear", "تمزق عجاني",
+  "erb", "شلل إرب",
+  "eclampsia", "تسمم حمل",
+  "apgar", "أبغار",
+  "return to operation", "عودة للعمليات",
+  "unplanned blood transfusion", "نقل دم غير مخطط",
+  "return to emergency", "عودة للطوارئ",
+  "unplanned repair", "إصلاح غير مخطط",
+  "ERCP", "مضاعفات ERCP",
+  "angiogram", "قسطرة",
+  "device error", "خلل معدات",
+  "ROP", "اعتلال شبكية",
+  "IHV", "نزيف داخل البطين",
+  "maternal ICU", "دخول أم للعناية",
+  "bile duct", "قناة صفراوية",
+  "still birth", "ولادة ميتة", "إملاص",
+  "therapeutic abortion", "إجهاض علاجي",
+  "septic abortion", "إجهاض إنتاني",
+  "thromboembolism", "جلطة", "خثار",
+  "uterine rupture", "تمزق رحمي",
+  "transfusion reaction", "تفاعل نقل", "TRALI", "TACO",
+  "haemolytic", "انحلالي",
+  "مضاعفات أثناء الولادة", "مضاعفات ولادة"
+];
+
+// Incident types that are inherently Near Miss / أنواع الحوادث الوشيكة
+const NEAR_MISS_TYPES = [
+  "حدث وشيك", "near miss", "Near Miss"
+];
+
+// High-risk incident types (may cause adverse events) / أنواع عالية الخطورة
+const HIGH_RISK_TYPES = [
+  "خطأ دوائي", "medication error",
+  "خطأ في الإجراء الطبي", "medical procedure error",
+  "خطأ في تحديد هوية المريض", "patient identification error",
+  "خطأ في نقل الدم", "blood transfusion error",
+  "عدوى مرتبطة بالرعاية الصحية", "healthcare associated infection"
+];
+
+const MONTHS_AR = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+
+// @section: classification-engine
+// ══════════════════════════════════════════════════════════════
+// Automatic Event Classification Engine / محرك التصنيف التلقائي
+// Based on QM&PS-APP-003 Policy / بناءً على السياسة المعتمدة
+// ══════════════════════════════════════════════════════════════
+function classifyEvent(record) {
+  const title = (record.OVR_Title || "").toLowerCase();
+  const type = (record.Incident_Type || "").toLowerCase();
+  const severity = (record.Severity_Level || "").toLowerCase();
+  const rootCause = (record.Root_Cause || "").toLowerCase();
+  const notes = (record.Notes || "").toLowerCase();
+  const searchText = `${title} ${type} ${rootCause} ${notes}`;
+
+  // 1. Check for Sentinel Event / التحقق من حدث خافر
+  const isSentinel = SENTINEL_KEYWORDS.some(kw => searchText.includes(kw.toLowerCase()));
+  if (isSentinel || severity === "red") {
+    // Red severity with high-risk type = Sentinel
+    if (severity === "red" && HIGH_RISK_TYPES.some(t => type.includes(t.toLowerCase()))) {
+      return { classification: "Sentinel Event", classificationAr: "حدث خافر", priority: "Critical", priorityAr: "حرجة" };
+    }
+    if (isSentinel) {
+      return { classification: "Sentinel Event", classificationAr: "حدث خافر", priority: "Critical", priorityAr: "حرجة" };
+    }
+  }
+
+  // 2. Check for Reportable Event / التحقق من حدث واجب الإبلاغ
+  const isReportable = REPORTABLE_KEYWORDS.some(kw => searchText.includes(kw.toLowerCase()));
+  if (isReportable || (severity === "red" && !isSentinel)) {
+    return { classification: "Reportable Event", classificationAr: "حدث واجب الإبلاغ", priority: "High", priorityAr: "عالية" };
+  }
+
+  // 3. Check for Near Miss / التحقق من حدث وشيك
+  const isNearMiss = NEAR_MISS_TYPES.some(t => type.includes(t.toLowerCase()));
+  if (isNearMiss) {
+    return { classification: "Near Miss", classificationAr: "حدث وشيك", priority: "Low", priorityAr: "منخفضة" };
+  }
+
+  // 4. Check for Adverse Event / التحقق من حدث ضار
+  // Amber/Yellow severity with high-risk type = Adverse Event
+  if ((severity === "amber" || severity === "yellow") && HIGH_RISK_TYPES.some(t => type.includes(t.toLowerCase()))) {
+    return { classification: "Adverse Event", classificationAr: "حدث ضار", priority: severity === "amber" ? "High" : "Medium", priorityAr: severity === "amber" ? "عالية" : "متوسطة" };
+  }
+
+  // Amber severity general = Adverse Event
+  if (severity === "amber") {
+    return { classification: "Adverse Event", classificationAr: "حدث ضار", priority: "Medium", priorityAr: "متوسطة" };
+  }
+
+  // 5. Default: No Harm Event / حدث بدون ضرر
+  return { classification: "No Harm Event", classificationAr: "حدث بدون ضرر", priority: severity === "yellow" ? "Medium" : "Low", priorityAr: severity === "yellow" ? "متوسطة" : "منخفضة" };
+}
+
+// @section: data-fetcher
+// ══════════════════════════════════════════════════════════════
+// Google Sheets Data Fetcher / محرك جلب البيانات
+// ══════════════════════════════════════════════════════════════
+function parseCSVLine(line) {
+  const result = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') { current += '"'; i++; }
+      else if (ch === '"') { inQuotes = false; }
+      else { current += ch; }
+    } else {
+      if (ch === '"') { inQuotes = true; }
+      else if (ch === ',') { result.push(current.trim()); current = ""; }
+      else { current += ch; }
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+function parseCSV(csvText) {
+  const lines = csvText.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const headers = parseCSVLine(lines[0]);
+  const records = [];
+  for (let i = 1; i < lines.length; i++) {
+    const vals = parseCSVLine(lines[i]);
+    if (vals.length < 3) continue; // Skip empty/malformed rows / تخطي الصفوف الفارغة
+    const obj = {};
+    headers.forEach((h, idx) => { obj[h] = vals[idx] || ""; });
+    records.push(obj);
+  }
+  return records;
+}
+
+function parseDate(val) {
+  if (!val) return null;
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatDate(d) {
+  if (!d) return "—";
+  return d.toISOString().split("T")[0];
+}
+
+function normalizeRecord(raw) {
+  const eventDate = parseDate(raw.Event_Date) || parseDate(raw.Report_Creation_Date);
+  const closureDate = parseDate(raw.Closure_Date);
+  const assignedDate = parseDate(raw.Assigned_Date);
+  const receivedDate = assignedDate || eventDate;
+  const policyDays = parseInt(raw.Policy_Closure_Days) || POLICY_CLOSURE_DAYS[raw.Severity_Level] || 10;
+  const actualDays = parseInt(raw.Actual_Closure_Days) || (closureDate && receivedDate ? Math.max(0, Math.round((closureDate - receivedDate) / 86400000)) : null);
+  const isClosed = (raw.Current_Status || "").toLowerCase() === "closed";
+  let openDays;
+  if (isClosed && actualDays !== null) {
+    openDays = actualDays;
+  } else if (!isClosed && receivedDate) {
+    openDays = Math.max(0, Math.round((Date.now() - receivedDate.getTime()) / 86400000));
+  } else {
+    openDays = 0;
+  }
+
+  // Compute compliance / حساب الالتزام
+  let compliance;
+  if (raw.Compliance_Status) {
+    compliance = raw.Compliance_Status;
+  } else if (isClosed && actualDays !== null) {
+    compliance = actualDays <= policyDays ? "Compliant" : "Non-Compliant";
+  } else if (!isClosed) {
+    compliance = openDays > policyDays ? "Non-Compliant" : "Pending";
+  } else {
+    compliance = "Pending";
+  }
+
+  const record = {
+    id: raw.OVR_ID || raw.OVR_Number || "",
+    ovrNumber: raw.OVR_Number || raw.OVR_ID || "",
+    title: raw.OVR_Title || "",
+    type: raw.Incident_Type || "",
+    severity: raw.Severity_Level || "",
+    reportingDept: raw.Reporting_Department || "",
+    responsibleDept: raw.Responsible_Department || "",
+    directorate: raw.Responsible_Directorate || "",
+    reporter: raw.Reporter_Name || "",
+    eventDate, closureDate, receivedDate,
+    policyDays, actualDays, openDays,
+    status: raw.Current_Status || "",
+    riskCategory: raw.Risk_Category || "",
+    rootCause: raw.Root_Cause || "",
+    correctiveAction: raw.Corrective_Action || "",
+    responsiblePerson: raw.Responsible_Person || "",
+    compliance,
+    year: eventDate ? eventDate.getFullYear() : null,
+    month: eventDate ? eventDate.getMonth() : null,
+    // Pass raw fields for classification engine / تمرير الحقول الخام لمحرك التصنيف
+    OVR_Title: raw.OVR_Title,
+    Incident_Type: raw.Incident_Type,
+    Severity_Level: raw.Severity_Level,
+    Root_Cause: raw.Root_Cause,
+    Notes: raw.Notes
+  };
+
+  // Apply classification engine / تطبيق محرك التصنيف
+  const cls = classifyEvent(record);
+  record.classification = cls.classification;
+  record.classificationAr = cls.classificationAr;
+  record.priority = cls.priority;
+  record.priorityAr = cls.priorityAr;
+
+  return record;
+}
+
+async function fetchFromGoogleSheets() {
+  if (!CONFIG.GOOGLE_SHEETS_CSV_URL) {
+    throw new Error("NO_URL");
+  }
+  const url = CONFIG.GOOGLE_SHEETS_CSV_URL;
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const text = await response.text();
+  if (!text || text.length < 50) throw new Error("EMPTY_RESPONSE");
+  const raw = parseCSV(text);
+  if (raw.length === 0) throw new Error("NO_DATA");
+  return raw.map(normalizeRecord).filter(r => r.id);
+}
+
+function getCachedData() {
+  try {
+    const cached = localStorage.getItem(CONFIG.CACHE_KEY);
+    if (!cached) return null;
+    const { data, timestamp } = JSON.parse(cached);
+    if (Date.now() - timestamp > CONFIG.CACHE_TTL_MS) return null;
+    return data;
+  } catch { return null; }
+}
+
+function setCachedData(data) {
+  try {
+    localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+  } catch { /* Storage full — ignore / التخزين ممتلئ */ }
+}
+
+// @section: embedded-demo-data
+// ══════════════════════════════════════════════════════════════
+// Embedded data from OVR_Database.xlsx (fallback when offline)
+// بيانات مدمجة من ملف Excel (احتياطي عند عدم الاتصال)
+// ══════════════════════════════════════════════════════════════
+function getEmbeddedData() {
+  const raw = [
+    {OVR_ID:"OVR-1001",OVR_Number:"MCH-2026-240002",OVR_Title:"عدوى مرتبطة بالرعاية الصحية - الأشعة",Incident_Type:"عدوى مرتبطة بالرعاية الصحية",Severity_Level:"Amber",Reporting_Department:"الأشعة",Responsible_Department:"الأشعة",Responsible_Directorate:"الخدمات الطبية المساندة",Reporter_Name:"أ. جواهر العمري",Event_Date:"2026-05-17",Report_Creation_Date:"2026-05-18",Assigned_Date:"2026-05-19",Closure_Date:"",Policy_Closure_Days:"10",Actual_Closure_Days:"",Current_Status:"In Progress",Risk_Category:"Medium",Root_Cause:"عدم وضوح السياسة",Corrective_Action:"تحديث قائمة التحقق",Responsible_Person:"أ. أمل الخالدي",Notes:""},
+    {OVR_ID:"OVR-1002",OVR_Number:"MCH-2025-240005",OVR_Title:"إصابة موظف - تمريض النفاس",Incident_Type:"إصابة موظف",Severity_Level:"Green",Reporting_Department:"تمريض النفاس",Responsible_Department:"خدمات التشغيل والصيانة",Responsible_Directorate:"إدارة التمريض",Reporter_Name:"د. ياسر النفيعي",Event_Date:"2026-05-19",Report_Creation_Date:"2026-05-20",Assigned_Date:"2026-05-21",Closure_Date:"",Policy_Closure_Days:"5",Actual_Closure_Days:"",Current_Status:"In Progress",Risk_Category:"Low",Root_Cause:"ضغط العمل ونقص الكوادر",Corrective_Action:"تعزيز الإشراف",Responsible_Person:"أ. دانة الراشد",Notes:""},
+    {OVR_ID:"OVR-1003",OVR_Number:"MCH-2025-240007",OVR_Title:"تأخر في تقديم الخدمة - التغذية العلاجية",Incident_Type:"تأخر في تقديم الخدمة",Severity_Level:"Green",Reporting_Department:"التغذية العلاجية",Responsible_Department:"التغذية العلاجية",Responsible_Directorate:"الخدمات الطبية المساندة",Reporter_Name:"د. ياسر النفيعي",Event_Date:"2026-05-29",Report_Creation_Date:"2026-05-30",Assigned_Date:"2026-05-31",Closure_Date:"",Policy_Closure_Days:"5",Actual_Closure_Days:"",Current_Status:"In Progress",Risk_Category:"Low",Root_Cause:"",Corrective_Action:"",Responsible_Person:"د. ياسر النفيعي",Notes:""},
+    {OVR_ID:"OVR-1004",OVR_Number:"MCH-2025-240009",OVR_Title:"خطأ في الإجراء الطبي - أمن المنشآت",Incident_Type:"خطأ في الإجراء الطبي",Severity_Level:"Amber",Reporting_Department:"أمن المنشآت",Responsible_Department:"أمن المنشآت",Responsible_Directorate:"الإدارة الإدارية والتشغيلية",Reporter_Name:"أ. سلطان البقمي",Event_Date:"2026-05-17",Report_Creation_Date:"2026-05-18",Assigned_Date:"2026-05-19",Closure_Date:"",Policy_Closure_Days:"10",Actual_Closure_Days:"",Current_Status:"In Progress",Risk_Category:"Medium",Root_Cause:"خلل في التواصل بين الفرق",Corrective_Action:"إعادة تدريب الفريق",Responsible_Person:"د. عمر الشهري",Notes:""},
+    {OVR_ID:"OVR-1005",OVR_Number:"MCH-2026-240011",OVR_Title:"خطأ دوائي - الصيدلية",Incident_Type:"خطأ دوائي",Severity_Level:"Amber",Reporting_Department:"الصيدلية",Responsible_Department:"الصيدلية",Responsible_Directorate:"الخدمات الطبية المساندة",Reporter_Name:"أ. نورة المطيري",Event_Date:"2026-05-22",Report_Creation_Date:"2026-05-23",Assigned_Date:"2026-05-24",Closure_Date:"",Policy_Closure_Days:"10",Actual_Closure_Days:"",Current_Status:"Under Review",Risk_Category:"High",Root_Cause:"خطأ في قراءة الوصفة",Corrective_Action:"تطبيق نظام التحقق المزدوج",Responsible_Person:"د. لمياء السبيعي",Notes:""},
+    {OVR_ID:"OVR-1006",OVR_Number:"MCH-2026-240013",OVR_Title:"سقوط مريض - العناية المركزة للأطفال",Incident_Type:"سقوط مريض",Severity_Level:"Red",Reporting_Department:"العناية المركزة للأطفال",Responsible_Department:"العناية المركزة للأطفال",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. منى الرشيدي",Event_Date:"2026-04-10",Report_Creation_Date:"2026-04-11",Assigned_Date:"2026-04-12",Closure_Date:"2026-04-25",Policy_Closure_Days:"14",Actual_Closure_Days:"13",Current_Status:"Closed",Risk_Category:"High",Root_Cause:"عدم رفع حواجز السرير",Corrective_Action:"تدريب على بروتوكول السقوط",Responsible_Person:"د. منى الرشيدي",Notes:"سقوط مريض أدى إلى إصابة"},
+    {OVR_ID:"OVR-1007",OVR_Number:"MCH-2026-240015",OVR_Title:"حدث وشيك - المختبر",Incident_Type:"حدث وشيك (Near Miss)",Severity_Level:"Green",Reporting_Department:"المختبر",Responsible_Department:"المختبر",Responsible_Directorate:"الخدمات الطبية المساندة",Reporter_Name:"أ. عبدالله الزهراني",Event_Date:"2026-03-15",Report_Creation_Date:"2026-03-16",Assigned_Date:"2026-03-17",Closure_Date:"2026-03-20",Policy_Closure_Days:"5",Actual_Closure_Days:"3",Current_Status:"Closed",Risk_Category:"Low",Root_Cause:"خطأ في تسمية العينة",Corrective_Action:"تحديث نظام التسمية",Responsible_Person:"أ. عبدالله الزهراني",Notes:""},
+    {OVR_ID:"OVR-1008",OVR_Number:"MCH-2026-240017",OVR_Title:"فشل / عطل أجهزة طبية - حضانة المواليد",Incident_Type:"فشل / عطل أجهزة طبية",Severity_Level:"Amber",Reporting_Department:"حضانة المواليد (NICU)",Responsible_Department:"خدمات التشغيل والصيانة",Responsible_Directorate:"الإدارة الإدارية والتشغيلية",Reporter_Name:"د. سعد الحربي",Event_Date:"2026-04-05",Report_Creation_Date:"2026-04-06",Assigned_Date:"2026-04-07",Closure_Date:"2026-04-18",Policy_Closure_Days:"10",Actual_Closure_Days:"11",Current_Status:"Closed",Risk_Category:"Medium",Root_Cause:"عدم الصيانة الدورية",Corrective_Action:"جدولة صيانة وقائية",Responsible_Person:"م. وليد الفيفي",Notes:""},
+    {OVR_ID:"OVR-1009",OVR_Number:"MCH-2026-240019",OVR_Title:"مخالفة سلامة - تمريض الطوارئ",Incident_Type:"مخالفة سلامة",Severity_Level:"Yellow",Reporting_Department:"تمريض الطوارئ",Responsible_Department:"تمريض الطوارئ",Responsible_Directorate:"إدارة التمريض",Reporter_Name:"أ. تركي العنزي",Event_Date:"2026-03-20",Report_Creation_Date:"2026-03-21",Assigned_Date:"2026-03-22",Closure_Date:"2026-03-30",Policy_Closure_Days:"10",Actual_Closure_Days:"8",Current_Status:"Closed",Risk_Category:"Medium",Root_Cause:"عدم الالتزام بالبروتوكول",Corrective_Action:"إعادة تدريب",Responsible_Person:"أ. تركي العنزي",Notes:""},
+    {OVR_ID:"OVR-1010",OVR_Number:"MCH-2026-240021",OVR_Title:"خطأ في تحديد هوية المريض - الطوارئ",Incident_Type:"خطأ في تحديد هوية المريض",Severity_Level:"Amber",Reporting_Department:"الطوارئ",Responsible_Department:"الطوارئ",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. خالد العتيبي",Event_Date:"2026-02-14",Report_Creation_Date:"2026-02-15",Assigned_Date:"2026-02-16",Closure_Date:"2026-02-28",Policy_Closure_Days:"10",Actual_Closure_Days:"12",Current_Status:"Closed",Risk_Category:"High",Root_Cause:"عدم التحقق من السوار",Corrective_Action:"تطبيق بروتوكول التعريف",Responsible_Person:"د. خالد العتيبي",Notes:""},
+    {OVR_ID:"OVR-1011",OVR_Number:"MCH-2026-240023",OVR_Title:"خطأ في نقل الدم - الولادة والطلق",Incident_Type:"خطأ في نقل الدم",Severity_Level:"Red",Reporting_Department:"الولادة والطلق",Responsible_Department:"المختبر",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. هند القحطاني",Event_Date:"2026-01-20",Report_Creation_Date:"2026-01-21",Assigned_Date:"2026-01-22",Closure_Date:"2026-02-05",Policy_Closure_Days:"14",Actual_Closure_Days:"14",Current_Status:"Closed",Risk_Category:"High",Root_Cause:"خطأ في فصيلة الدم",Corrective_Action:"تطبيق نظام التحقق الثلاثي",Responsible_Person:"أ. عبدالله الزهراني",Notes:"نقل دم غير متوافق - تم التدارك"},
+    {OVR_ID:"OVR-1012",OVR_Number:"MCH-2026-240025",OVR_Title:"مضاعفات أثناء الولادة - الولادة والطلق",Incident_Type:"مضاعفات أثناء الولادة",Severity_Level:"Red",Reporting_Department:"الولادة والطلق",Responsible_Department:"الولادة والطلق",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. هند القحطاني",Event_Date:"2026-02-28",Report_Creation_Date:"2026-03-01",Assigned_Date:"2026-03-02",Closure_Date:"2026-03-18",Policy_Closure_Days:"14",Actual_Closure_Days:"16",Current_Status:"Closed",Risk_Category:"High",Root_Cause:"تأخر في التدخل الجراحي",Corrective_Action:"تحديث بروتوكول الطوارئ",Responsible_Person:"د. هند القحطاني",Notes:"تمزق رحمي أثناء الولادة"},
+    {OVR_ID:"OVR-1013",OVR_Number:"MCH-2026-240027",OVR_Title:"تأخر في تقديم الخدمة - العيادات الخارجية",Incident_Type:"تأخر في تقديم الخدمة",Severity_Level:"Green",Reporting_Department:"العيادات الخارجية",Responsible_Department:"العيادات الخارجية",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. فهد الدوسري",Event_Date:"2026-04-01",Report_Creation_Date:"2026-04-02",Assigned_Date:"2026-04-03",Closure_Date:"2026-04-07",Policy_Closure_Days:"5",Actual_Closure_Days:"4",Current_Status:"Closed",Risk_Category:"Low",Root_Cause:"نقص في الكوادر",Corrective_Action:"إعادة جدولة المواعيد",Responsible_Person:"د. فهد الدوسري",Notes:""},
+    {OVR_ID:"OVR-1014",OVR_Number:"MCH-2026-240029",OVR_Title:"خطأ دوائي - التمريض العام",Incident_Type:"خطأ دوائي",Severity_Level:"Yellow",Reporting_Department:"التمريض العام",Responsible_Department:"الصيدلية",Responsible_Directorate:"إدارة التمريض",Reporter_Name:"أ. نورة المطيري",Event_Date:"2026-03-10",Report_Creation_Date:"2026-03-11",Assigned_Date:"2026-03-12",Closure_Date:"2026-03-22",Policy_Closure_Days:"10",Actual_Closure_Days:"10",Current_Status:"Closed",Risk_Category:"Medium",Root_Cause:"خطأ في الجرعة",Corrective_Action:"مراجعة نظام الصرف",Responsible_Person:"د. لمياء السبيعي",Notes:""},
+    {OVR_ID:"OVR-1015",OVR_Number:"MCH-2026-240031",OVR_Title:"إصابة موظف - خدمات التشغيل والصيانة",Incident_Type:"إصابة موظف",Severity_Level:"Yellow",Reporting_Department:"خدمات التشغيل والصيانة",Responsible_Department:"خدمات التشغيل والصيانة",Responsible_Directorate:"الإدارة الإدارية والتشغيلية",Reporter_Name:"م. وليد الفيفي",Event_Date:"2026-04-15",Report_Creation_Date:"2026-04-16",Assigned_Date:"2026-04-17",Closure_Date:"2026-04-25",Policy_Closure_Days:"10",Actual_Closure_Days:"8",Current_Status:"Closed",Risk_Category:"Medium",Root_Cause:"عدم ارتداء معدات الوقاية",Corrective_Action:"تعزيز الرقابة",Responsible_Person:"م. وليد الفيفي",Notes:""},
+    {OVR_ID:"OVR-1016",OVR_Number:"MCH-2026-240033",OVR_Title:"حدث وشيك - الصيدلية",Incident_Type:"حدث وشيك (Near Miss)",Severity_Level:"Green",Reporting_Department:"الصيدلية",Responsible_Department:"الصيدلية",Responsible_Directorate:"الخدمات الطبية المساندة",Reporter_Name:"د. لمياء السبيعي",Event_Date:"2026-05-01",Report_Creation_Date:"2026-05-02",Assigned_Date:"2026-05-03",Closure_Date:"2026-05-06",Policy_Closure_Days:"5",Actual_Closure_Days:"3",Current_Status:"Closed",Risk_Category:"Low",Root_Cause:"تشابه أسماء الأدوية",Corrective_Action:"فصل الأدوية المتشابهة",Responsible_Person:"د. لمياء السبيعي",Notes:""},
+    {OVR_ID:"OVR-1017",OVR_Number:"MCH-2026-240035",OVR_Title:"سقوط مريض - التمريض العام",Incident_Type:"سقوط مريض",Severity_Level:"Amber",Reporting_Department:"التمريض العام",Responsible_Department:"التمريض العام",Responsible_Directorate:"إدارة التمريض",Reporter_Name:"أ. نورة المطيري",Event_Date:"2026-05-10",Report_Creation_Date:"2026-05-11",Assigned_Date:"2026-05-12",Closure_Date:"",Policy_Closure_Days:"10",Actual_Closure_Days:"",Current_Status:"Under Review",Risk_Category:"High",Root_Cause:"أرضية مبللة",Corrective_Action:"",Responsible_Person:"أ. نورة المطيري",Notes:""},
+    {OVR_ID:"OVR-1018",OVR_Number:"MCH-2026-240037",OVR_Title:"عدوى مرتبطة بالرعاية الصحية - حضانة المواليد",Incident_Type:"عدوى مرتبطة بالرعاية الصحية",Severity_Level:"Red",Reporting_Department:"حضانة المواليد (NICU)",Responsible_Department:"حضانة المواليد (NICU)",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. سعد الحربي",Event_Date:"2026-04-20",Report_Creation_Date:"2026-04-21",Assigned_Date:"2026-04-22",Closure_Date:"",Policy_Closure_Days:"14",Actual_Closure_Days:"",Current_Status:"In Progress",Risk_Category:"High",Root_Cause:"خلل في التعقيم",Corrective_Action:"مراجعة بروتوكول التعقيم",Responsible_Person:"د. سعد الحربي",Notes:"عدوى مكتسبة في NICU"},
+    {OVR_ID:"OVR-1019",OVR_Number:"MCH-2026-240039",OVR_Title:"مخالفة سلامة - أمن المنشآت",Incident_Type:"مخالفة سلامة",Severity_Level:"Green",Reporting_Department:"أمن المنشآت",Responsible_Department:"أمن المنشآت",Responsible_Directorate:"الإدارة الإدارية والتشغيلية",Reporter_Name:"أ. بدر المطرفي",Event_Date:"2026-05-05",Report_Creation_Date:"2026-05-06",Assigned_Date:"2026-05-07",Closure_Date:"2026-05-10",Policy_Closure_Days:"5",Actual_Closure_Days:"3",Current_Status:"Closed",Risk_Category:"Low",Root_Cause:"باب طوارئ مغلق",Corrective_Action:"فحص يومي للمخارج",Responsible_Person:"أ. بدر المطرفي",Notes:""},
+    {OVR_ID:"OVR-1020",OVR_Number:"MCH-2026-240041",OVR_Title:"خطأ في الإجراء الطبي - الطوارئ",Incident_Type:"خطأ في الإجراء الطبي",Severity_Level:"Red",Reporting_Department:"الطوارئ",Responsible_Department:"الطوارئ",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. خالد العتيبي",Event_Date:"2026-01-05",Report_Creation_Date:"2026-01-06",Assigned_Date:"2026-01-07",Closure_Date:"2026-01-22",Policy_Closure_Days:"14",Actual_Closure_Days:"15",Current_Status:"Closed",Risk_Category:"High",Root_Cause:"خطأ في التشخيص",Corrective_Action:"مراجعة بروتوكول التشخيص",Responsible_Person:"د. خالد العتيبي",Notes:""},
+    {OVR_ID:"OVR-1021",OVR_Number:"MCH-2026-240043",OVR_Title:"خطأ دوائي - تمريض النفاس",Incident_Type:"خطأ دوائي",Severity_Level:"Amber",Reporting_Department:"تمريض النفاس",Responsible_Department:"الصيدلية",Responsible_Directorate:"إدارة التمريض",Reporter_Name:"أ. ريم الشمري",Event_Date:"2026-06-01",Report_Creation_Date:"2026-06-02",Assigned_Date:"2026-06-03",Closure_Date:"",Policy_Closure_Days:"10",Actual_Closure_Days:"",Current_Status:"New",Risk_Category:"High",Root_Cause:"",Corrective_Action:"",Responsible_Person:"",Notes:""},
+    {OVR_ID:"OVR-1022",OVR_Number:"MCH-2026-240045",OVR_Title:"فشل / عطل أجهزة طبية - الأشعة",Incident_Type:"فشل / عطل أجهزة طبية",Severity_Level:"Yellow",Reporting_Department:"الأشعة",Responsible_Department:"خدمات التشغيل والصيانة",Responsible_Directorate:"الخدمات الطبية المساندة",Reporter_Name:"أ. ماجد الغامدي",Event_Date:"2026-05-25",Report_Creation_Date:"2026-05-26",Assigned_Date:"2026-05-27",Closure_Date:"",Policy_Closure_Days:"10",Actual_Closure_Days:"",Current_Status:"Pending Closure",Risk_Category:"Medium",Root_Cause:"انتهاء العمر الافتراضي",Corrective_Action:"طلب استبدال الجهاز",Responsible_Person:"م. وليد الفيفي",Notes:""},
+    {OVR_ID:"OVR-1023",OVR_Number:"MCH-2026-240047",OVR_Title:"تأخر في تقديم الخدمة - الطوارئ",Incident_Type:"تأخر في تقديم الخدمة",Severity_Level:"Yellow",Reporting_Department:"الطوارئ",Responsible_Department:"الطوارئ",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. خالد العتيبي",Event_Date:"2026-06-10",Report_Creation_Date:"2026-06-11",Assigned_Date:"2026-06-12",Closure_Date:"",Policy_Closure_Days:"10",Actual_Closure_Days:"",Current_Status:"New",Risk_Category:"Low",Root_Cause:"",Corrective_Action:"",Responsible_Person:"",Notes:""},
+    {OVR_ID:"OVR-1024",OVR_Number:"MCH-2026-240049",OVR_Title:"حدث وشيك - الولادة والطلق",Incident_Type:"حدث وشيك (Near Miss)",Severity_Level:"Green",Reporting_Department:"الولادة والطلق",Responsible_Department:"الولادة والطلق",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. هند القحطاني",Event_Date:"2026-04-28",Report_Creation_Date:"2026-04-29",Assigned_Date:"2026-04-30",Closure_Date:"2026-05-03",Policy_Closure_Days:"5",Actual_Closure_Days:"3",Current_Status:"Closed",Risk_Category:"Low",Root_Cause:"خطأ في تحديد الهوية",Corrective_Action:"تعزيز بروتوكول التعريف",Responsible_Person:"د. هند القحطاني",Notes:""},
+    {OVR_ID:"OVR-1025",OVR_Number:"MCH-2026-240051",OVR_Title:"خطأ في تحديد هوية المريض - حضانة المواليد",Incident_Type:"خطأ في تحديد هوية المريض",Severity_Level:"Amber",Reporting_Department:"حضانة المواليد (NICU)",Responsible_Department:"حضانة المواليد (NICU)",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. سعد الحربي",Event_Date:"2026-06-05",Report_Creation_Date:"2026-06-06",Assigned_Date:"2026-06-07",Closure_Date:"",Policy_Closure_Days:"10",Actual_Closure_Days:"",Current_Status:"Under Review",Risk_Category:"High",Root_Cause:"",Corrective_Action:"",Responsible_Person:"",Notes:"خطأ في سوار التعريف لمولود"},
+    {OVR_ID:"OVR-1026",OVR_Number:"MCH-2026-240053",OVR_Title:"إصابة موظف - المختبر",Incident_Type:"إصابة موظف",Severity_Level:"Green",Reporting_Department:"المختبر",Responsible_Department:"المختبر",Responsible_Directorate:"الخدمات الطبية المساندة",Reporter_Name:"أ. عبدالله الزهراني",Event_Date:"2026-03-25",Report_Creation_Date:"2026-03-26",Assigned_Date:"2026-03-27",Closure_Date:"2026-03-31",Policy_Closure_Days:"5",Actual_Closure_Days:"4",Current_Status:"Closed",Risk_Category:"Low",Root_Cause:"إصابة إبرة",Corrective_Action:"تدريب على التخلص الآمن",Responsible_Person:"أ. عبدالله الزهراني",Notes:"إصابة إبرة أثناء سحب عينة"},
+    {OVR_ID:"OVR-1027",OVR_Number:"MCH-2026-240055",OVR_Title:"سقوط مريض - الطوارئ",Incident_Type:"سقوط مريض",Severity_Level:"Yellow",Reporting_Department:"الطوارئ",Responsible_Department:"الطوارئ",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. خالد العتيبي",Event_Date:"2026-02-05",Report_Creation_Date:"2026-02-06",Assigned_Date:"2026-02-07",Closure_Date:"2026-02-15",Policy_Closure_Days:"10",Actual_Closure_Days:"8",Current_Status:"Closed",Risk_Category:"Medium",Root_Cause:"عدم تقييم خطر السقوط",Corrective_Action:"تطبيق مقياس Morse",Responsible_Person:"د. خالد العتيبي",Notes:""},
+    {OVR_ID:"OVR-1028",OVR_Number:"MCH-2026-240057",OVR_Title:"عدوى مرتبطة بالرعاية الصحية - التمريض العام",Incident_Type:"عدوى مرتبطة بالرعاية الصحية",Severity_Level:"Amber",Reporting_Department:"التمريض العام",Responsible_Department:"التمريض العام",Responsible_Directorate:"إدارة التمريض",Reporter_Name:"أ. نورة المطيري",Event_Date:"2026-01-15",Report_Creation_Date:"2026-01-16",Assigned_Date:"2026-01-17",Closure_Date:"2026-01-28",Policy_Closure_Days:"10",Actual_Closure_Days:"11",Current_Status:"Closed",Risk_Category:"Medium",Root_Cause:"عدم غسل اليدين",Corrective_Action:"حملة نظافة اليدين",Responsible_Person:"أ. نورة المطيري",Notes:""},
+    {OVR_ID:"OVR-1029",OVR_Number:"MCH-2026-240059",OVR_Title:"مخالفة سلامة - الصيدلية",Incident_Type:"مخالفة سلامة",Severity_Level:"Green",Reporting_Department:"الصيدلية",Responsible_Department:"الصيدلية",Responsible_Directorate:"الخدمات الطبية المساندة",Reporter_Name:"د. لمياء السبيعي",Event_Date:"2026-04-12",Report_Creation_Date:"2026-04-13",Assigned_Date:"2026-04-14",Closure_Date:"2026-04-17",Policy_Closure_Days:"5",Actual_Closure_Days:"3",Current_Status:"Closed",Risk_Category:"Low",Root_Cause:"تخزين غير صحيح",Corrective_Action:"إعادة ترتيب المخزن",Responsible_Person:"د. لمياء السبيعي",Notes:""},
+    {OVR_ID:"OVR-1030",OVR_Number:"MCH-2026-240061",OVR_Title:"خطأ دوائي - العناية المركزة للأطفال",Incident_Type:"خطأ دوائي",Severity_Level:"Red",Reporting_Department:"العناية المركزة للأطفال",Responsible_Department:"الصيدلية",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. منى الرشيدي",Event_Date:"2026-03-05",Report_Creation_Date:"2026-03-06",Assigned_Date:"2026-03-07",Closure_Date:"2026-03-22",Policy_Closure_Days:"14",Actual_Closure_Days:"15",Current_Status:"Closed",Risk_Category:"High",Root_Cause:"خطأ في حساب الجرعة",Corrective_Action:"تطبيق نظام إلكتروني للجرعات",Responsible_Person:"د. لمياء السبيعي",Notes:"خطأ دوائي خطير في جرعة طفل"},
+    {OVR_ID:"OVR-1031",OVR_Number:"MCH-2026-240063",OVR_Title:"تأخر في تقديم الخدمة - الأشعة",Incident_Type:"تأخر في تقديم الخدمة",Severity_Level:"Green",Reporting_Department:"الأشعة",Responsible_Department:"الأشعة",Responsible_Directorate:"الخدمات الطبية المساندة",Reporter_Name:"أ. ماجد الغامدي",Event_Date:"2026-05-15",Report_Creation_Date:"2026-05-16",Assigned_Date:"2026-05-17",Closure_Date:"2026-05-20",Policy_Closure_Days:"5",Actual_Closure_Days:"3",Current_Status:"Closed",Risk_Category:"Low",Root_Cause:"عطل في الجهاز",Corrective_Action:"صيانة طارئة",Responsible_Person:"أ. ماجد الغامدي",Notes:""},
+    {OVR_ID:"OVR-1032",OVR_Number:"MCH-2026-240065",OVR_Title:"خطأ في الإجراء الطبي - العيادات الخارجية",Incident_Type:"خطأ في الإجراء الطبي",Severity_Level:"Amber",Reporting_Department:"العيادات الخارجية",Responsible_Department:"العيادات الخارجية",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. فهد الدوسري",Event_Date:"2026-06-15",Report_Creation_Date:"2026-06-16",Assigned_Date:"2026-06-17",Closure_Date:"",Policy_Closure_Days:"10",Actual_Closure_Days:"",Current_Status:"New",Risk_Category:"Medium",Root_Cause:"",Corrective_Action:"",Responsible_Person:"",Notes:""},
+    {OVR_ID:"OVR-1033",OVR_Number:"MCH-2026-240067",OVR_Title:"حدث وشيك - تمريض الطوارئ",Incident_Type:"حدث وشيك (Near Miss)",Severity_Level:"Green",Reporting_Department:"تمريض الطوارئ",Responsible_Department:"تمريض الطوارئ",Responsible_Directorate:"إدارة التمريض",Reporter_Name:"أ. تركي العنزي",Event_Date:"2026-02-20",Report_Creation_Date:"2026-02-21",Assigned_Date:"2026-02-22",Closure_Date:"2026-02-25",Policy_Closure_Days:"5",Actual_Closure_Days:"3",Current_Status:"Closed",Risk_Category:"Low",Root_Cause:"خطأ في قراءة الملف",Corrective_Action:"تدريب على السجلات الإلكترونية",Responsible_Person:"أ. تركي العنزي",Notes:""},
+    {OVR_ID:"OVR-1034",OVR_Number:"MCH-2026-240069",OVR_Title:"فشل / عطل أجهزة طبية - الطوارئ",Incident_Type:"فشل / عطل أجهزة طبية",Severity_Level:"Amber",Reporting_Department:"الطوارئ",Responsible_Department:"خدمات التشغيل والصيانة",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. خالد العتيبي",Event_Date:"2026-06-18",Report_Creation_Date:"2026-06-19",Assigned_Date:"2026-06-20",Closure_Date:"",Policy_Closure_Days:"10",Actual_Closure_Days:"",Current_Status:"New",Risk_Category:"Medium",Root_Cause:"",Corrective_Action:"",Responsible_Person:"",Notes:"عطل جهاز مراقبة في الطوارئ"},
+    {OVR_ID:"OVR-1035",OVR_Number:"MCH-2026-240071",OVR_Title:"إصابة موظف - التغذية العلاجية",Incident_Type:"إصابة موظف",Severity_Level:"Green",Reporting_Department:"التغذية العلاجية",Responsible_Department:"التغذية العلاجية",Responsible_Directorate:"الخدمات الطبية المساندة",Reporter_Name:"أ. سارة المالكي",Event_Date:"2026-04-22",Report_Creation_Date:"2026-04-23",Assigned_Date:"2026-04-24",Closure_Date:"2026-04-28",Policy_Closure_Days:"5",Actual_Closure_Days:"4",Current_Status:"Closed",Risk_Category:"Low",Root_Cause:"حرق أثناء التحضير",Corrective_Action:"توفير معدات وقاية",Responsible_Person:"أ. سارة المالكي",Notes:""},
+    {OVR_ID:"OVR-1036",OVR_Number:"MCH-2026-240073",OVR_Title:"خطأ دوائي - حضانة المواليد",Incident_Type:"خطأ دوائي",Severity_Level:"Amber",Reporting_Department:"حضانة المواليد (NICU)",Responsible_Department:"الصيدلية",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. سعد الحربي",Event_Date:"2026-05-08",Report_Creation_Date:"2026-05-09",Assigned_Date:"2026-05-10",Closure_Date:"",Policy_Closure_Days:"10",Actual_Closure_Days:"",Current_Status:"In Progress",Risk_Category:"High",Root_Cause:"خطأ في تركيز المحلول",Corrective_Action:"",Responsible_Person:"د. لمياء السبيعي",Notes:""},
+    {OVR_ID:"OVR-1037",OVR_Number:"MCH-2026-240075",OVR_Title:"مخالفة سلامة - التمريض العام",Incident_Type:"مخالفة سلامة",Severity_Level:"Green",Reporting_Department:"التمريض العام",Responsible_Department:"التمريض العام",Responsible_Directorate:"إدارة التمريض",Reporter_Name:"أ. نورة المطيري",Event_Date:"2026-06-08",Report_Creation_Date:"2026-06-09",Assigned_Date:"2026-06-10",Closure_Date:"",Policy_Closure_Days:"5",Actual_Closure_Days:"",Current_Status:"Pending Closure",Risk_Category:"Low",Root_Cause:"عدم ارتداء القفازات",Corrective_Action:"تنبيه وتدريب",Responsible_Person:"أ. نورة المطيري",Notes:""},
+    {OVR_ID:"OVR-1038",OVR_Number:"MCH-2026-240077",OVR_Title:"سقوط مريض - تمريض النفاس",Incident_Type:"سقوط مريض",Severity_Level:"Yellow",Reporting_Department:"تمريض النفاس",Responsible_Department:"تمريض النفاس",Responsible_Directorate:"إدارة التمريض",Reporter_Name:"أ. ريم الشمري",Event_Date:"2026-01-28",Report_Creation_Date:"2026-01-29",Assigned_Date:"2026-01-30",Closure_Date:"2026-02-08",Policy_Closure_Days:"10",Actual_Closure_Days:"9",Current_Status:"Closed",Risk_Category:"Medium",Root_Cause:"عدم مرافقة المريضة",Corrective_Action:"تعزيز المرافقة",Responsible_Person:"أ. ريم الشمري",Notes:""},
+    {OVR_ID:"OVR-1039",OVR_Number:"MCH-2026-240079",OVR_Title:"عدوى مرتبطة بالرعاية الصحية - الولادة والطلق",Incident_Type:"عدوى مرتبطة بالرعاية الصحية",Severity_Level:"Amber",Reporting_Department:"الولادة والطلق",Responsible_Department:"الولادة والطلق",Responsible_Directorate:"الإدارة الطبية",Reporter_Name:"د. هند القحطاني",Event_Date:"2026-03-18",Report_Creation_Date:"2026-03-19",Assigned_Date:"2026-03-20",Closure_Date:"2026-04-01",Policy_Closure_Days:"10",Actual_Closure_Days:"12",Current_Status:"Closed",Risk_Category:"Medium",Root_Cause:"خلل في التعقيم",Corrective_Action:"مراجعة بروتوكول التعقيم",Responsible_Person:"د. هند القحطاني",Notes:""},
+    {OVR_ID:"OVR-1040",OVR_Number:"MCH-2026-240081",OVR_Title:"خطأ في تحديد هوية المريض - تمريض الطوارئ",Incident_Type:"خطأ في تحديد هوية المريض",Severity_Level:"Yellow",Reporting_Department:"تمريض الطوارئ",Responsible_Department:"تمريض الطوارئ",Responsible_Directorate:"إدارة التمريض",Reporter_Name:"أ. تركي العنزي",Event_Date:"2026-04-18",Report_Creation_Date:"2026-04-19",Assigned_Date:"2026-04-20",Closure_Date:"2026-04-29",Policy_Closure_Days:"10",Actual_Closure_Days:"9",Current_Status:"Closed",Risk_Category:"Medium",Root_Cause:"عدم التحقق من السوار",Corrective_Action:"تدريب على بروتوكول التعريف",Responsible_Person:"أ. تركي العنزي",Notes:""}
+  ];
+  return raw.map(normalizeRecord);
+}
+
+// @section: data-loader
+let ALL_DATA = [];
+let filteredData = [];
+let dataSource = "none"; // "google_sheets" | "cache" | "embedded" / مصدر البيانات
+
+async function loadData(forceRefresh = false) {
+  showLoading(true);
+  updateConnectionStatus("loading");
+
+  // Try Google Sheets first / محاولة جلب من Google Sheets أولاً
+  if (CONFIG.GOOGLE_SHEETS_CSV_URL) {
+    try {
+      const data = await fetchFromGoogleSheets();
+      ALL_DATA = data;
+      dataSource = "google_sheets";
+      setCachedData(data.map(d => ({ ...d, eventDate: formatDate(d.eventDate), closureDate: formatDate(d.closureDate), receivedDate: formatDate(d.receivedDate) })));
+      updateConnectionStatus("online");
+      showBanner(false);
+    } catch (err) {
+      console.warn("Google Sheets fetch failed / فشل جلب البيانات:", err.message);
+      // Try cache / محاولة التخزين المؤقت
+      const cached = getCachedData();
+      if (cached && !forceRefresh) {
+        ALL_DATA = cached.map(normalizeRecord);
+        dataSource = "cache";
+        updateConnectionStatus("fallback");
+        showBanner(true, `⚠️ يتم عرض بيانات مخزنة مؤقتاً / Showing cached data — ${err.message}`);
+      } else {
+        // Fallback to embedded / الرجوع للبيانات المدمجة
+        ALL_DATA = getEmbeddedData();
+        dataSource = "embedded";
+        updateConnectionStatus("fallback");
+        showBanner(true, "⚠️ يتم عرض البيانات المدمجة — قم بإعداد رابط Google Sheets / Using embedded data — configure Google Sheets URL");
+      }
+    }
+  } else {
+    // No URL configured — use embedded data / لا يوجد رابط — استخدام البيانات المدمجة
+    ALL_DATA = getEmbeddedData();
+    dataSource = "embedded";
+    updateConnectionStatus("fallback");
+    showBanner(true, "ℹ️ لم يتم تكوين رابط Google Sheets — يتم عرض البيانات المدمجة / No Google Sheets URL configured — showing embedded data");
+  }
+
+  filteredData = [...ALL_DATA];
+  populateFilters();
+  renderAll();
+  showLoading(false);
+  updateLastRefreshTime();
+}
+
+function showLoading(show) {
+  const el = document.getElementById("loadingOverlay");
+  if (el) { show ? el.classList.remove("hidden") : el.classList.add("hidden"); }
+}
+
+function showBanner(show, msg = "", isError = false) {
+  const banner = document.getElementById("connectionBanner");
+  const msgEl = document.getElementById("connectionMsg");
+  if (banner) {
+    banner.style.display = show ? "flex" : "none";
+    banner.className = "connection-banner" + (isError ? " error" : "");
+  }
+  if (msgEl) msgEl.textContent = msg;
+}
+
+function updateConnectionStatus(status) {
+  const badge = document.getElementById("dataSourceStatus");
+  const label = document.getElementById("dataSourceLabel");
+  if (!badge || !label) return;
+  badge.className = "data-source-badge " + (status === "online" ? "online" : status === "loading" ? "offline" : "fallback");
+  const labels = {
+    online: "متصل بـ Google Sheets / Connected",
+    fallback: "بيانات مدمجة / Embedded Data",
+    loading: "جاري التحميل... / Loading...",
+    offline: "غير متصل / Offline"
+  };
+  label.textContent = labels[status] || labels.offline;
+}
+
+function updateLastRefreshTime() {
+  const el = document.getElementById("lastUpdateTime");
+  if (el) el.textContent = "آخر تحديث / Last update: " + new Date().toLocaleString("ar-SA");
+}
+
+// @section: filters-logic
+function populateFilters() {
+  const sets = { Year: new Set(), Dept: new Set(), Admin: new Set(), Type: new Set(), Severity: new Set(), Status: new Set(), Classification: new Set(), Priority: new Set(), Compliance: new Set() };
+  ALL_DATA.forEach(d => {
+    if (d.year) sets.Year.add(d.year);
+    if (d.reportingDept) sets.Dept.add(d.reportingDept);
+    if (d.directorate) sets.Admin.add(d.directorate);
+    if (d.type) sets.Type.add(d.type);
+    if (d.severity) sets.Severity.add(d.severity);
+    if (d.status) sets.Status.add(d.status);
+    if (d.classification) sets.Classification.add(d.classification);
+    if (d.priority) sets.Priority.add(d.priority);
+    if (d.compliance) sets.Compliance.add(d.compliance);
+  });
+  const addOpts = (id, vals) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const current = sel.value;
+    while (sel.options.length > 1) sel.remove(1);
+    [...vals].sort().forEach(v => { const o = document.createElement("option"); o.value = v; o.textContent = v; sel.appendChild(o); });
+    sel.value = current;
+  };
+  addOpts("filterYear", sets.Year);
+  addOpts("filterDept", sets.Dept);
+  addOpts("filterAdmin", sets.Admin);
+  addOpts("filterType", sets.Type);
+  addOpts("filterSeverity", sets.Severity);
+  addOpts("filterStatus", sets.Status);
+  addOpts("filterClassification", sets.Classification);
+  addOpts("filterPriority", sets.Priority);
+  addOpts("filterCompliance", sets.Compliance);
+  const monthSel = document.getElementById("filterMonth");
+  if (monthSel && monthSel.options.length <= 1) {
+    MONTHS_AR.forEach((m, i) => { const o = document.createElement("option"); o.value = i; o.textContent = m; monthSel.appendChild(o); });
+  }
+}
+
+function applyFilters() {
+  const gv = id => document.getElementById(id)?.value || "";
+  const y = gv("filterYear"), m = gv("filterMonth"), dept = gv("filterDept"), admin = gv("filterAdmin");
+  const type = gv("filterType"), sev = gv("filterSeverity"), st = gv("filterStatus");
+  const cls = gv("filterClassification"), pri = gv("filterPriority"), comp = gv("filterCompliance");
+  filteredData = ALL_DATA.filter(d => {
+    if (y && d.year !== parseInt(y)) return false;
+    if (m !== "" && d.month !== parseInt(m)) return false;
+    if (dept && d.reportingDept !== dept) return false;
+    if (admin && d.directorate !== admin) return false;
+    if (type && d.type !== type) return false;
+    if (sev && d.severity !== sev) return false;
+    if (st && d.status !== st) return false;
+    if (cls && d.classification !== cls) return false;
+    if (pri && d.priority !== pri) return false;
+    if (comp && d.compliance !== comp) return false;
+    return true;
+  });
+  renderAll();
+}
+
+function resetFilters() {
+  document.querySelectorAll(".filters-grid select").forEach(s => s.value = "");
+  filteredData = [...ALL_DATA];
+  renderAll();
+}
+
+// @section: kpi-calculations
+function calcKPIs(data) {
+  const total = data.length;
+  const closed = data.filter(d => d.status === "Closed");
+  const open = data.filter(d => d.status !== "Closed");
+  const underReview = data.filter(d => d.status === "Under Review");
+  const closedCount = closed.length;
+  const openCount = data.filter(d => d.status !== "Closed").length;
+  const closureRate = total ? ((closedCount / total) * 100).toFixed(1) : 0;
+  const compliant = closed.filter(d => d.compliance === "Compliant").length;
+  const complianceRate = closedCount ? ((compliant / closedCount) * 100).toFixed(1) : 0;
+  const delayRate = closedCount ? ((1 - compliant / closedCount) * 100).toFixed(1) : 0;
+  const avgDays = closedCount ? (closed.reduce((s, d) => s + (d.actualDays || d.openDays || 0), 0) / closedCount).toFixed(1) : 0;
+  const highSeverity = data.filter(d => d.severity === "Red" || d.severity === "Amber").length;
+  const overdue = open.filter(d => d.openDays > d.policyDays).length;
+  // Classification counts / عدد كل تصنيف
+  const sentinel = data.filter(d => d.classification === "Sentinel Event").length;
+  const reportable = data.filter(d => d.classification === "Reportable Event").length;
+  const nearMiss = data.filter(d => d.classification === "Near Miss").length;
+  const adverse = data.filter(d => d.classification === "Adverse Event").length;
+  const noHarm = data.filter(d => d.classification === "No Harm Event").length;
+  return { total, openCount, closedCount, closureRate, complianceRate, delayRate, avgDays, highSeverity, overdue, underReview: underReview.length, sentinel, reportable, nearMiss, adverse, noHarm };
+}
+
+function renderKPIs(kpis) {
+  const cards = [
+    { icon: "📊", value: kpis.total, label: "إجمالي البلاغات\nTotal Reports", cls: "info" },
+    { icon: "🔓", value: kpis.openCount, label: "بلاغات مفتوحة\nOpen Reports", cls: "warning" },
+    { icon: "✅", value: kpis.closedCount, label: "بلاغات مغلقة\nClosed Reports", cls: "success" },
+    { icon: "📈", value: kpis.closureRate + "%", label: "نسبة الإغلاق\nClosure Rate", cls: "success" },
+    { icon: "⏱️", value: kpis.complianceRate + "%", label: "نسبة الالتزام بالوقت\nTimely Compliance", cls: parseFloat(kpis.complianceRate) >= 90 ? "success" : parseFloat(kpis.complianceRate) >= 80 ? "warning" : "danger" },
+    { icon: "⚠️", value: kpis.delayRate + "%", label: "نسبة التأخر\nDelay Rate", cls: parseFloat(kpis.delayRate) <= 10 ? "success" : parseFloat(kpis.delayRate) <= 20 ? "warning" : "danger" },
+    { icon: "📅", value: kpis.avgDays + " يوم", label: "متوسط أيام الإغلاق\nAvg Closure Days", cls: "info" },
+    { icon: "🔴", value: kpis.highSeverity, label: "بلاغات عالية الخطورة\nHigh Severity", cls: "danger" },
+    { icon: "⏰", value: kpis.overdue, label: "بلاغات متأخرة حالياً\nCurrently Overdue", cls: "danger" },
+    { icon: "🔍", value: kpis.underReview, label: "قيد المراجعة\nUnder Review", cls: "info" }
+  ];
+  const grid = document.getElementById("kpiGrid");
+  if (grid) grid.innerHTML = cards.map(c => `<div class="kpi-card ${c.cls}"><div class="kpi-icon">${c.icon}</div><div class="kpi-value">${c.value}</div><div class="kpi-label">${c.label.replace("\n","<br>")}</div></div>`).join("");
+}
+
+function renderClassificationKPIs(kpis) {
+  const total = kpis.total || 1;
+  const cards = [
+    { icon: "🚨", value: kpis.sentinel, label: `حدث خافر / Sentinel Event\n${(kpis.sentinel/total*100).toFixed(1)}% من الإجمالي`, cls: "sentinel" },
+    { icon: "📢", value: kpis.reportable, label: `حدث واجب الإبلاغ / Reportable\n${(kpis.reportable/total*100).toFixed(1)}% من الإجمالي`, cls: "danger" },
+    { icon: "⚡", value: kpis.adverse, label: `حدث ضار / Adverse Event\n${(kpis.adverse/total*100).toFixed(1)}% من الإجمالي`, cls: "warning" },
+    { icon: "🔶", value: kpis.nearMiss, label: `حدث وشيك / Near Miss\n${(kpis.nearMiss/total*100).toFixed(1)}% من الإجمالي`, cls: "accent" },
+    { icon: "🟢", value: kpis.noHarm, label: `بدون ضرر / No Harm\n${(kpis.noHarm/total*100).toFixed(1)}% من الإجمالي`, cls: "success" }
+  ];
+  const grid = document.getElementById("classificationKpiGrid");
+  if (grid) grid.innerHTML = cards.map(c => `<div class="kpi-card ${c.cls}"><div class="kpi-icon">${c.icon}</div><div class="kpi-value">${c.value}</div><div class="kpi-label">${c.label.replace("\n","<br>")}</div></div>`).join("");
+}
+
+// @section: chart-instances
+let charts = {};
+function destroyCharts() { Object.values(charts).forEach(c => { if (c?.destroy) c.destroy(); }); charts = {}; }
+const CHART_COLORS = ["#006272","#C9A84C","#00829a","#d32f2f","#0f9d58","#f5a623","#1976d2","#8e24aa","#e64a19","#00897b","#5c6bc0","#c2185b"];
+const CLS_COLORS = { "Sentinel Event": "#b71c1c", "Reportable Event": "#e65100", "Adverse Event": "#d32f2f", "Near Miss": "#f5a623", "No Harm Event": "#0f9d58" };
+const PRI_COLORS = { "Critical": "#b71c1c", "High": "#d32f2f", "Medium": "#f5a623", "Low": "#0f9d58" };
+const SEV_COLORS = { "Red": "#b71c1c", "Amber": "#e65100", "Yellow": "#f5a623", "Green": "#0f9d58" };
+
+function chartDefaults() {
+  Chart.defaults.font.family = "'Segoe UI','Tahoma','Arial',sans-serif";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.plugins.legend.rtl = true;
+  Chart.defaults.plugins.legend.labels.usePointStyle = true;
+  Chart.defaults.plugins.tooltip.rtl = true;
+}
+
+// @section: overview-charts
+function renderGaugeChart(complianceRate) {
+  const ctx = document.getElementById("gaugeChart");
+  if (!ctx) return;
+  const val = parseFloat(complianceRate) || 0;
+  const color = val >= 90 ? "#0f9d58" : val >= 80 ? "#f5a623" : "#d32f2f";
+  charts.gauge = new Chart(ctx, { type: "doughnut", data: { datasets: [{ data: [val, 100 - val], backgroundColor: [color, "#e8eef5"], borderWidth: 0, circumference: 180, rotation: 270 }] }, options: { responsive: true, maintainAspectRatio: true, cutout: "75%", plugins: { legend: { display: false }, tooltip: { enabled: false }, datalabels: { display: false } } } });
+  const lbl = document.getElementById("gaugeLabel");
+  if (lbl) { lbl.textContent = val + "%"; lbl.style.color = color; }
+}
+
+function renderPieChart(data) {
+  const ctx = document.getElementById("pieChart");
+  if (!ctx) return;
+  const counts = {};
+  data.forEach(d => { counts[d.type] = (counts[d.type] || 0) + 1; });
+  charts.pie = new Chart(ctx, { type: "doughnut", data: { labels: Object.keys(counts), datasets: [{ data: Object.values(counts), backgroundColor: CHART_COLORS.slice(0, Object.keys(counts).length), borderWidth: 1 }] }, options: { responsive: true, plugins: { legend: { position: "bottom", labels: { font: { size: 9 }, padding: 6 } }, datalabels: { color: "#fff", font: { weight: "bold", size: 9 }, formatter: (v, c) => { const t = c.dataset.data.reduce((a,b)=>a+b,0); return v/t > 0.05 ? ((v/t)*100).toFixed(0)+"%" : ""; } } } }, plugins: [ChartDataLabels] });
+}
+
+function renderSeverityPie(data) {
+  const ctx = document.getElementById("severityPieChart");
+  if (!ctx) return;
+  const counts = {};
+  data.forEach(d => { if (d.severity) counts[d.severity] = (counts[d.severity] || 0) + 1; });
+  charts.sevPie = new Chart(ctx, { type: "doughnut", data: { labels: Object.keys(counts), datasets: [{ data: Object.values(counts), backgroundColor: Object.keys(counts).map(k => SEV_COLORS[k] || "#999"), borderWidth: 1 }] }, options: { responsive: true, plugins: { legend: { position: "bottom", labels: { font: { size: 10 }, padding: 8 } }, datalabels: { display: false } } } });
+}
+
+// @section: classification-charts
+function renderClassificationCharts(data) {
+  // Classification pie / مخطط دائري للتصنيف
+  const ctx1 = document.getElementById("classificationPieChart");
+  if (ctx1) {
+    const counts = {};
+    data.forEach(d => { counts[d.classification] = (counts[d.classification] || 0) + 1; });
+    charts.clsPie = new Chart(ctx1, { type: "doughnut", data: { labels: Object.keys(counts), datasets: [{ data: Object.values(counts), backgroundColor: Object.keys(counts).map(k => CLS_COLORS[k] || "#999"), borderWidth: 1 }] }, options: { responsive: true, plugins: { legend: { position: "bottom", labels: { font: { size: 10 }, padding: 8 } }, datalabels: { color: "#fff", font: { weight: "bold", size: 10 }, formatter: (v, c) => { const t = c.dataset.data.reduce((a,b)=>a+b,0); return v/t > 0.05 ? ((v/t)*100).toFixed(0)+"%" : ""; } } } }, plugins: [ChartDataLabels] });
+  }
+
+  // Priority pie / مخطط دائري للأولوية
+  const ctx2 = document.getElementById("priorityPieChart");
+  if (ctx2) {
+    const counts = {};
+    data.forEach(d => { counts[d.priority] = (counts[d.priority] || 0) + 1; });
+    charts.priPie = new Chart(ctx2, { type: "doughnut", data: { labels: Object.keys(counts), datasets: [{ data: Object.values(counts), backgroundColor: Object.keys(counts).map(k => PRI_COLORS[k] || "#999"), borderWidth: 1 }] }, options: { responsive: true, plugins: { legend: { position: "bottom", labels: { font: { size: 10 }, padding: 8 } }, datalabels: { display: false } } } });
+  }
+
+  // Classification by department / التصنيف حسب القسم
+  const ctx3 = document.getElementById("classificationByDeptChart");
+  if (ctx3) {
+    const deptCls = {};
+    data.forEach(d => {
+      if (!deptCls[d.reportingDept]) deptCls[d.reportingDept] = {};
+      deptCls[d.reportingDept][d.classification] = (deptCls[d.reportingDept][d.classification] || 0) + 1;
+    });
+    const depts = Object.keys(deptCls);
+    const clsTypes = ["Sentinel Event", "Reportable Event", "Adverse Event", "Near Miss", "No Harm Event"];
+    const clsLabels = ["حدث خافر", "واجب الإبلاغ", "حدث ضار", "حدث وشيك", "بدون ضرر"];
+    charts.clsByDept = new Chart(ctx3, {
+      type: "bar",
+      data: { labels: depts, datasets: clsTypes.map((cls, i) => ({ label: clsLabels[i], data: depts.map(d => deptCls[d][cls] || 0), backgroundColor: CLS_COLORS[cls], borderRadius: 3 })) },
+      options: { responsive: true, plugins: { legend: { position: "top" }, datalabels: { display: false } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, grid: { color: "#eee" } } } }
+    });
+  }
+
+  // Sentinel events table / جدول الأحداث الخافرة
+  const tbody = document.getElementById("sentinelBody");
+  if (tbody) {
+    const sentinels = data.filter(d => d.classification === "Sentinel Event" || d.classification === "Reportable Event");
+    tbody.innerHTML = sentinels.length ? sentinels.map(d => {
+      const sevCls = `sev-${(d.severity||"").toLowerCase()}`;
+      const priCls = `pri-${(d.priority||"").toLowerCase()}`;
+      const rowCls = d.classification === "Sentinel Event" ? "sentinel-row" : "";
+      return `<tr class="${rowCls}"><td><strong>${d.ovrNumber}</strong></td><td>${d.title}</td><td>${d.reportingDept}</td><td>${formatDate(d.eventDate)}</td><td><span class="severity-badge ${sevCls}">${d.severity}</span></td><td><span class="priority-badge ${priCls}">${d.priorityAr} / ${d.priority}</span></td><td>${d.status}</td></tr>`;
+    }).join("") : `<tr><td colspan="7" style="text-align:center;color:var(--muted)">لا توجد أحداث خافرة / No sentinel events</td></tr>`;
+  }
+}
+
+// @section: department-charts
+function renderDeptCharts(data) {
+  const deptStats = {};
+  data.forEach(d => {
+    const dept = d.reportingDept;
+    if (!dept) return;
+    if (!deptStats[dept]) deptStats[dept] = { total: 0, closed: 0, compliant: 0, overdue: 0, closureDays: 0 };
+    deptStats[dept].total++;
+    if (d.status === "Closed") { deptStats[dept].closed++; deptStats[dept].closureDays += (d.actualDays || d.openDays || 0); if (d.compliance === "Compliant") deptStats[dept].compliant++; }
+    if (d.status !== "Closed" && d.openDays > d.policyDays) deptStats[dept].overdue++;
+  });
+  const depts = Object.keys(deptStats).filter(d => deptStats[d].total > 0).sort((a,b) => deptStats[b].total - deptStats[a].total);
+
+  const ctx1 = document.getElementById("deptBarChart");
+  if (ctx1) {
+    charts.deptBar = new Chart(ctx1, { type: "bar", data: { labels: depts, datasets: [{ label: "عدد البلاغات / Reports", data: depts.map(d => deptStats[d].total), backgroundColor: "#006272", borderRadius: 4 }] }, options: { responsive: true, indexAxis: "y", plugins: { legend: { display: false }, datalabels: { anchor: "end", align: "end", font: { weight: "bold", size: 10 }, color: "#006272" } }, scales: { x: { beginAtZero: true, grid: { display: false } }, y: { grid: { display: false } } } }, plugins: [ChartDataLabels] });
+  }
+
+  const ctx2 = document.getElementById("deptComplianceChart");
+  if (ctx2) {
+    const compRates = depts.map(d => deptStats[d].closed ? ((deptStats[d].compliant / deptStats[d].closed) * 100).toFixed(1) : 0);
+    const barColors = compRates.map(v => v >= 90 ? "#0f9d58" : v >= 80 ? "#f5a623" : "#d32f2f");
+    charts.deptComp = new Chart(ctx2, { type: "bar", data: { labels: depts, datasets: [{ label: "نسبة الالتزام % / Compliance %", data: compRates, backgroundColor: barColors, borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: { display: false }, datalabels: { anchor: "end", align: "top", formatter: v => v + "%", font: { weight: "bold", size: 9 }, color: "#333" } }, scales: { y: { beginAtZero: true, max: 100, grid: { color: "#eee" } }, x: { grid: { display: false } } } }, plugins: [ChartDataLabels] });
+  }
+
+  const ctx3 = document.getElementById("deptOverdueChart");
+  if (ctx3) {
+    charts.deptOverdue = new Chart(ctx3, { type: "bar", data: { labels: depts, datasets: [{ label: "متأخرة / Overdue", data: depts.map(d => deptStats[d].overdue), backgroundColor: "#d32f2f", borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: { display: false }, datalabels: { anchor: "end", align: "top", font: { weight: "bold", size: 10 }, color: "#d32f2f" } }, scales: { y: { beginAtZero: true, grid: { color: "#eee" } }, x: { grid: { display: false } } } }, plugins: [ChartDataLabels] });
+  }
+
+  // Department table / جدول الأقسام
+  const tbody = document.querySelector("#deptTable tbody");
+  if (tbody) {
+    const sorted = [...depts].sort((a, b) => { const rA = deptStats[a].closed ? (deptStats[a].compliant / deptStats[a].closed) : 0; const rB = deptStats[b].closed ? (deptStats[b].compliant / deptStats[b].closed) : 0; return rB - rA; });
+    tbody.innerHTML = sorted.map((d, i) => {
+      const s = deptStats[d]; const closureRate = s.total ? ((s.closed / s.total) * 100).toFixed(1) : 0; const compRate = s.closed ? ((s.compliant / s.closed) * 100).toFixed(1) : 0;
+      const perfClass = compRate >= 90 ? "perf-green" : compRate >= 80 ? "perf-yellow" : "perf-red";
+      const perfLabel = compRate >= 90 ? "أخضر / Green" : compRate >= 80 ? "أصفر / Yellow" : "أحمر / Red";
+      return `<tr><td>${i+1}</td><td>${d}</td><td>${s.total}</td><td>${s.closed}</td><td>${closureRate}%</td><td>${compRate}%</td><td>${s.overdue}</td><td><span class="perf-badge ${perfClass}">${perfLabel}</span></td></tr>`;
+    }).join("");
+  }
+}
+
+// @section: admin-charts
+function renderAdminCharts(data) {
+  const adminStats = {};
+  data.forEach(d => {
+    const admin = d.directorate;
+    if (!admin) return;
+    if (!adminStats[admin]) adminStats[admin] = { total: 0, closed: 0, compliant: 0, overdue: 0, closureDays: 0 };
+    adminStats[admin].total++;
+    if (d.status === "Closed") { adminStats[admin].closed++; adminStats[admin].closureDays += (d.actualDays || d.openDays || 0); if (d.compliance === "Compliant") adminStats[admin].compliant++; }
+    if (d.status !== "Closed" && d.openDays > d.policyDays) adminStats[admin].overdue++;
+  });
+  const admins = Object.keys(adminStats).filter(a => adminStats[a].total > 0);
+
+  const ctx1 = document.getElementById("adminComplianceChart");
+  if (ctx1) {
+    charts.adminComp = new Chart(ctx1, { type: "bar", data: { labels: admins, datasets: [{ label: "ملتزم / Compliant", data: admins.map(a => adminStats[a].compliant), backgroundColor: "#0f9d58", borderRadius: 4 }, { label: "غير ملتزم / Non-Compliant", data: admins.map(a => adminStats[a].closed - adminStats[a].compliant), backgroundColor: "#d32f2f", borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: { position: "top" }, datalabels: { font: { weight: "bold", size: 10 }, color: "#fff" } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, grid: { color: "#eee" } } } }, plugins: [ChartDataLabels] });
+  }
+
+  const ctx2 = document.getElementById("adminOverdueChart");
+  if (ctx2) {
+    charts.adminOverdue = new Chart(ctx2, { type: "bar", data: { labels: admins, datasets: [{ label: "متأخرة / Overdue", data: admins.map(a => adminStats[a].overdue), backgroundColor: "#e64a19", borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: { display: false }, datalabels: { anchor: "end", align: "top", font: { weight: "bold", size: 10 }, color: "#e64a19" } }, scales: { y: { beginAtZero: true, grid: { color: "#eee" } }, x: { grid: { display: false } } } }, plugins: [ChartDataLabels] });
+  }
+
+  const ctx3 = document.getElementById("adminAvgTimeChart");
+  if (ctx3) {
+    const avgTimes = admins.map(a => adminStats[a].closed ? (adminStats[a].closureDays / adminStats[a].closed).toFixed(1) : 0);
+    charts.adminAvg = new Chart(ctx3, { type: "bar", data: { labels: admins, datasets: [{ label: "متوسط أيام / Avg Days", data: avgTimes, backgroundColor: "#C9A84C", borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: { display: false }, datalabels: { anchor: "end", align: "top", formatter: v => v + " يوم", font: { weight: "bold", size: 9 }, color: "#333" } }, scales: { y: { beginAtZero: true, grid: { color: "#eee" } }, x: { grid: { display: false } } } }, plugins: [ChartDataLabels] });
+  }
+}
+
+// @section: trend-charts
+function renderTrendCharts(data) {
+  const monthlyData = {};
+  data.forEach(d => {
+    if (d.year === null || d.month === null) return;
+    const key = `${d.year}-${String(d.month + 1).padStart(2, "0")}`;
+    if (!monthlyData[key]) monthlyData[key] = { total: 0, closed: 0, compliant: 0, overdue: 0, closureDays: 0 };
+    monthlyData[key].total++;
+    if (d.status === "Closed") { monthlyData[key].closed++; monthlyData[key].closureDays += (d.actualDays || d.openDays || 0); if (d.compliance === "Compliant") monthlyData[key].compliant++; }
+    if (d.status !== "Closed" && d.openDays > d.policyDays) monthlyData[key].overdue++;
+  });
+  const sortedKeys = Object.keys(monthlyData).sort();
+  const labels = sortedKeys.map(k => { const [y, m] = k.split("-"); return MONTHS_AR[parseInt(m) - 1] + " " + y; });
+
+  const ctx1 = document.getElementById("monthlyTrendChart");
+  if (ctx1) {
+    charts.monthlyTrend = new Chart(ctx1, { type: "line", data: { labels, datasets: [{ label: "إجمالي / Total", data: sortedKeys.map(k => monthlyData[k].total), borderColor: "#006272", backgroundColor: "rgba(0,98,114,0.1)", fill: true, tension: 0.3, pointRadius: 3 }, { label: "مغلقة / Closed", data: sortedKeys.map(k => monthlyData[k].closed), borderColor: "#0f9d58", backgroundColor: "rgba(15,157,88,0.1)", fill: true, tension: 0.3, pointRadius: 3 }] }, options: { responsive: true, plugins: { legend: { position: "top" }, datalabels: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: "#eee" } }, x: { grid: { display: false } } } } });
+  }
+
+  const ctx2 = document.getElementById("complianceTrendChart");
+  if (ctx2) {
+    const compRates = sortedKeys.map(k => monthlyData[k].closed ? ((monthlyData[k].compliant / monthlyData[k].closed) * 100).toFixed(1) : null);
+    charts.compTrend = new Chart(ctx2, { type: "line", data: { labels, datasets: [{ label: "نسبة الالتزام % / Compliance %", data: compRates, borderColor: "#006272", backgroundColor: "rgba(0,98,114,0.1)", fill: true, tension: 0.3, pointRadius: 3 }, { label: "الهدف 90% / Target 90%", data: sortedKeys.map(() => 90), borderColor: "#d32f2f", borderDash: [5, 5], pointRadius: 0, fill: false }] }, options: { responsive: true, plugins: { legend: { position: "top" }, datalabels: { display: false } }, scales: { y: { beginAtZero: true, max: 100, grid: { color: "#eee" } }, x: { grid: { display: false } } } } });
+  }
+
+  const ctx3 = document.getElementById("overdueTrendChart");
+  if (ctx3) {
+    charts.overdueTrend = new Chart(ctx3, { type: "bar", data: { labels, datasets: [{ label: "متأخرة / Overdue", data: sortedKeys.map(k => monthlyData[k].overdue), backgroundColor: "#d32f2f", borderRadius: 4 }] }, options: { responsive: true, plugins: { legend: { display: false }, datalabels: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: "#eee" } }, x: { grid: { display: false } } } } });
+  }
+
+  const ctx4 = document.getElementById("closureTimeTrendChart");
+  if (ctx4) {
+    const avgTimes = sortedKeys.map(k => monthlyData[k].closed ? (monthlyData[k].closureDays / monthlyData[k].closed).toFixed(1) : null);
+    charts.closureTimeTrend = new Chart(ctx4, { type: "line", data: { labels, datasets: [{ label: "متوسط أيام الإغلاق / Avg Closure Days", data: avgTimes, borderColor: "#C9A84C", backgroundColor: "rgba(201,168,76,0.1)", fill: true, tension: 0.3, pointRadius: 3 }] }, options: { responsive: true, plugins: { legend: { position: "top" }, datalabels: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: "#eee" } }, x: { grid: { display: false } } } } });
+  }
+
+  renderHeatMap(data);
+}
+
+// @section: heatmap
+function renderHeatMap(data) {
+  const headerRow = document.getElementById("heatMapHeader");
+  const body = document.getElementById("heatMapBody");
+  if (!headerRow || !body) return;
+  const deptMonthly = {};
+  const activeMonths = new Set();
+  data.forEach(d => {
+    if (d.year === null || d.month === null) return;
+    const mKey = `${d.year}-${String(d.month + 1).padStart(2, "0")}`;
+    activeMonths.add(mKey);
+    const dept = d.reportingDept;
+    if (!dept) return;
+    if (!deptMonthly[dept]) deptMonthly[dept] = {};
+    if (!deptMonthly[dept][mKey]) deptMonthly[dept][mKey] = { closed: 0, compliant: 0 };
+    if (d.status === "Closed") { deptMonthly[dept][mKey].closed++; if (d.compliance === "Compliant") deptMonthly[dept][mKey].compliant++; }
+  });
+  const months = [...activeMonths].sort();
+  headerRow.innerHTML = `<th>القسم / Department</th>` + months.map(m => { const [y, mo] = m.split("-"); return `<th>${MONTHS_AR[parseInt(mo) - 1]} ${y.slice(2)}</th>`; }).join("");
+  body.innerHTML = Object.keys(deptMonthly).map(dept => {
+    const cells = months.map(m => { const d = deptMonthly[dept][m]; if (!d || d.closed === 0) return `<td class="heat-na">—</td>`; const rate = ((d.compliant / d.closed) * 100).toFixed(0); const cls = rate >= 90 ? "heat-green" : rate >= 80 ? "heat-yellow" : "heat-red"; return `<td class="${cls}">${rate}%</td>`; }).join("");
+    return `<tr><td style="white-space:nowrap;font-weight:600">${dept}</td>${cells}</tr>`;
+  }).join("");
+}
+
+// @section: alerts
+function renderAlerts(data) {
+  const container = document.getElementById("alertsContainer");
+  if (!container) return;
+  const open = data.filter(d => d.status !== "Closed");
+  const overdue = open.filter(d => d.openDays > d.policyDays);
+  const nearDue = open.filter(d => { const rem = d.policyDays - d.openDays; return rem > 0 && rem <= CONFIG.WARNING_DAYS; });
+  const sentinels = data.filter(d => d.classification === "Sentinel Event");
+  const reportables = data.filter(d => d.classification === "Reportable Event" && d.status !== "Closed");
+
+  // Least compliant admins / الإدارات الأقل التزاماً
+  const adminStats = {};
+  data.forEach(d => { if (!adminStats[d.directorate]) adminStats[d.directorate] = { closed: 0, compliant: 0 }; if (d.status === "Closed") { adminStats[d.directorate].closed++; if (d.compliance === "Compliant") adminStats[d.directorate].compliant++; } });
+  const leastCompliant = Object.entries(adminStats).filter(([, s]) => s.closed > 0).map(([name, s]) => ({ name, rate: ((s.compliant / s.closed) * 100).toFixed(1) })).sort((a, b) => a.rate - b.rate).slice(0, 5);
+
+  // Depts with most overdue / الأقسام الأعلى تأخراً
+  const deptOverdue = {};
+  overdue.forEach(d => { deptOverdue[d.reportingDept] = (deptOverdue[d.reportingDept] || 0) + 1; });
+  const topOverdueDepts = Object.entries(deptOverdue).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  container.innerHTML = `
+    ${sentinels.length ? `<div class="alert-card alert-sentinel"><div class="alert-card-title">🚨 أحداث خافرة / Sentinel Events (${sentinels.length})</div><ul class="alert-list">${sentinels.map(d => `<li><span><strong>${d.ovrNumber}</strong> — ${d.title}</span><span class="alert-count">${d.status}</span></li>`).join("")}</ul></div>` : ""}
+    ${reportables.length ? `<div class="alert-card alert-danger"><div class="alert-card-title">📢 أحداث واجبة المتابعة / Reportable Events (${reportables.length})</div><ul class="alert-list">${reportables.slice(0, 8).map(d => `<li><span><strong>${d.ovrNumber}</strong> — ${d.title}</span><span class="alert-count">${d.status}</span></li>`).join("")}</ul></div>` : ""}
+    <div class="alert-card alert-danger"><div class="alert-card-title">⏰ بلاغات تجاوزت المدة المحددة / Overdue Reports (${overdue.length})</div><ul class="alert-list">${overdue.slice(0, 8).map(d => `<li><span><strong>${d.ovrNumber}</strong> — ${d.reportingDept}</span><span class="alert-count">${d.openDays} يوم / days</span></li>`).join("")}${overdue.length > 8 ? `<li class="muted">... و ${overdue.length - 8} أخرى / and ${overdue.length - 8} more</li>` : ""}${overdue.length === 0 ? `<li class="muted">لا توجد / None</li>` : ""}</ul></div>
+    <div class="alert-card alert-warning"><div class="alert-card-title">⏳ قريبة من الاستحقاق (≤${CONFIG.WARNING_DAYS} أيام) / Near Due (${nearDue.length})</div><ul class="alert-list">${nearDue.slice(0, 8).map(d => { const rem = d.policyDays - d.openDays; return `<li><span><strong>${d.ovrNumber}</strong> — ${d.reportingDept}</span><span class="alert-count">${rem} يوم متبقي / days left</span></li>`; }).join("")}${nearDue.length === 0 ? `<li class="muted">لا توجد / None</li>` : ""}</ul></div>
+    <div class="alert-card alert-info"><div class="alert-card-title">📉 الإدارات الأقل التزاماً / Least Compliant</div><ul class="alert-list">${leastCompliant.map(a => `<li><span>${a.name}</span><span class="alert-count">${a.rate}%</span></li>`).join("")}</ul></div>
+    <div class="alert-card alert-danger"><div class="alert-card-title">🏢 الأقسام الأعلى تأخراً / Most Overdue Depts</div><ul class="alert-list">${topOverdueDepts.map(([d, c]) => `<li><span>${d}</span><span class="alert-count">${c} بلاغ</span></li>`).join("")}${topOverdueDepts.length === 0 ? `<li class="muted">لا توجد / None</li>` : ""}</ul></div>
+  `;
+}
+
+// @section: details-table
+let currentPage = 1;
+const PAGE_SIZE = 15;
+
+function renderDetailsTable(data, page = 1) {
+  const tbody = document.getElementById("detailsBody");
+  const paginationEl = document.getElementById("pagination");
+  if (!tbody) return;
+  const searchTerm = (document.getElementById("searchInput")?.value || "").toLowerCase();
+  let filtered = data;
+  if (searchTerm) {
+    filtered = data.filter(d => `${d.id} ${d.ovrNumber} ${d.title} ${d.reportingDept} ${d.directorate} ${d.type} ${d.severity} ${d.status} ${d.classification} ${d.priority}`.toLowerCase().includes(searchTerm));
+  }
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
+  page = Math.max(1, Math.min(page, totalPages));
+  currentPage = page;
+  const start = (page - 1) * PAGE_SIZE;
+  const pageData = filtered.slice(start, start + PAGE_SIZE);
+
+  tbody.innerHTML = pageData.map(d => {
+    const sevCls = `sev-${(d.severity||"").toLowerCase()}`;
+    const clsBadge = d.classification === "Sentinel Event" ? "cls-sentinel" : d.classification === "Reportable Event" ? "cls-reportable" : d.classification === "Adverse Event" ? "cls-adverse" : d.classification === "Near Miss" ? "cls-nearmiss" : "cls-noharm";
+    const priCls = `pri-${(d.priority||"").toLowerCase()}`;
+    const rowCls = d.classification === "Sentinel Event" ? "sentinel-row" : "";
+    return `<tr class="${rowCls}"><td><strong>${d.ovrNumber}</strong></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${d.title}</td><td>${d.reportingDept}</td><td>${d.directorate}</td><td>${formatDate(d.eventDate)}</td><td>${formatDate(d.closureDate)}</td><td>${d.openDays || d.actualDays || "—"}</td><td>${d.policyDays}</td><td><span class="severity-badge ${sevCls}">${d.severity}</span></td><td><span class="classification-badge ${clsBadge}">${d.classificationAr}</span></td><td><span class="priority-badge ${priCls}">${d.priorityAr}</span></td><td>${d.status}</td></tr>`;
+  }).join("");
+
+  if (paginationEl) {
+    let html = `<button class="page-btn" onclick="goToPage(${page - 1})" ${page <= 1 ? "disabled" : ""}>‹ السابق</button>`;
+    const maxBtns = 5; let startP = Math.max(1, page - Math.floor(maxBtns / 2)); let endP = Math.min(totalPages, startP + maxBtns - 1);
+    for (let i = startP; i <= endP; i++) html += `<button class="page-btn ${i === page ? "active" : ""}" onclick="goToPage(${i})">${i}</button>`;
+    html += `<button class="page-btn" onclick="goToPage(${page + 1})" ${page >= totalPages ? "disabled" : ""}>التالي ›</button>`;
+    html += `<span class="muted" style="font-size:0.75rem;margin-right:8px">${filtered.length} بلاغ / reports</span>`;
+    paginationEl.innerHTML = html;
+  }
+}
+
+window.goToPage = function(p) { renderDetailsTable(filteredData, p); };
+
+// @section: export
+function exportToCSV(data) {
+  const headers = ["رقم البلاغ / OVR #","العنوان / Title","القسم / Dept","الإدارة / Directorate","تاريخ الحدث / Event Date","تاريخ الإغلاق / Closed","الأيام / Days","المستهدف / Target","الخطورة / Severity","التصنيف / Classification","الأولوية / Priority","الحالة / Status","الالتزام / Compliance"];
+  const rows = data.map(d => [d.ovrNumber, d.title, d.reportingDept, d.directorate, formatDate(d.eventDate), formatDate(d.closureDate), d.openDays||d.actualDays||"", d.policyDays, d.severity, `${d.classificationAr} / ${d.classification}`, `${d.priorityAr} / ${d.priority}`, d.status, d.compliance]);
+  const csv = "\uFEFF" + [headers, ...rows].map(r => r.map(c => `"${c}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "OVR_Reports_" + new Date().toISOString().split("T")[0] + ".csv";
+  link.click();
+}
+
+// @section: navigation
+function setupNavigation() {
+  document.querySelectorAll(".nav-item").forEach(item => {
+    item.addEventListener("click", e => {
+      e.preventDefault();
+      const page = item.dataset.page;
+      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+      item.classList.add("active");
+      document.querySelectorAll(".page-content").forEach(p => p.classList.remove("active"));
+      const target = document.getElementById("page-" + page);
+      if (target) target.classList.add("active");
+      if (window.innerWidth <= 900) document.getElementById("sidebar")?.classList.remove("open");
+    });
+  });
+  document.getElementById("menuToggle")?.addEventListener("click", () => { document.getElementById("sidebar")?.classList.toggle("open"); });
+}
+
+// @section: render-all
+function renderAll() {
+  destroyCharts();
+  chartDefaults();
+  const kpis = calcKPIs(filteredData);
+  renderKPIs(kpis);
+  renderClassificationKPIs(kpis);
+  renderGaugeChart(kpis.complianceRate);
+  renderPieChart(filteredData);
+  renderSeverityPie(filteredData);
+  renderClassificationCharts(filteredData);
+  renderDeptCharts(filteredData);
+  renderAdminCharts(filteredData);
+  renderTrendCharts(filteredData);
+  renderAlerts(filteredData);
+  renderDetailsTable(filteredData, 1);
+}
+
+// @section: init
+document.addEventListener("DOMContentLoaded", () => {
+  const dateEl = document.getElementById("currentDate");
+  if (dateEl) dateEl.textContent = new Date().toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" });
+
+  setupNavigation();
+
+  document.getElementById("applyFilters")?.addEventListener("click", applyFilters);
+  document.getElementById("resetFilters")?.addEventListener("click", resetFilters);
+  document.getElementById("refreshData")?.addEventListener("click", () => loadData(true));
+  document.getElementById("retryConnection")?.addEventListener("click", () => loadData(true));
+  document.getElementById("searchInput")?.addEventListener("input", () => renderDetailsTable(filteredData, 1));
+  document.getElementById("exportExcel")?.addEventListener("click", () => exportToCSV(filteredData));
+  document.getElementById("exportPDF")?.addEventListener("click", () => window.print());
+
+  // Load data / تحميل البيانات
+  loadData();
+
+  // Auto-refresh timer / مؤقت التحديث التلقائي
+  setInterval(() => { if (CONFIG.GOOGLE_SHEETS_CSV_URL) loadData(); }, CONFIG.REFRESH_INTERVAL_MS);
+});
+
+</script>
+  </body>
+</html>
